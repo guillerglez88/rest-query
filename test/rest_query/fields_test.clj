@@ -4,6 +4,17 @@
    [honey.sql :as hsql]
    [rest-query.fields :as sut]))
 
+(deftest contains-alias?-test
+  (testing "Can checkin if sql-map already contains aleas"
+    (is (= true
+           (-> (sut/all-by-type :Person)
+               (sut/extract-prop :content {:name "code"} :code)
+               (sut/contains-alias? :code))))
+    (is (= false
+           (-> (sut/all-by-type :Person)
+               (sut/extract-prop :content {:name "code"} :code)
+               (sut/contains-alias? :foo))))))
+
 (deftest make-alias-test
   (testing "Can make pg-sql compliant field name"
     (is (= :path
@@ -35,6 +46,15 @@
                  "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS code ON TRUE")
             "code"]
            (-> (sut/all-by-type :Person)
+               (sut/extract-prop :content {:name "code"} :code)
+               (hsql/format)))))
+  (testing "Repeated props are not dupplicated"
+    (is (= [(str "SELECT res.* "
+                 "FROM Person AS res "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS code ON TRUE")
+            "code"]
+           (-> (sut/all-by-type :Person)
+               (sut/extract-prop :content {:name "code"} :code)
                (sut/extract-prop :content {:name "code"} :code)
                (hsql/format))))))
 
@@ -76,4 +96,16 @@
                                  [{:name "contacts" :collection true}
                                   {:name "value"}]
                                  :contact-value)
+               (hsql/format)))))
+  (testing "Can access deep jsonb property with shared path elem"
+    (is (= [(str "SELECT res.* "
+                 "FROM Person AS res "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS content_name_given ON TRUE "
+                 "INNER JOIN JSONB_ARRAY_ELEMENTS(content_name_given) AS fname ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS lname ON TRUE")
+            "name" "given" "family"]
+           (-> (sut/all-by-type :Person)
+               (sut/extract-path :content [{:name "name"} {:name "given", :collection true}] :fname)
+               (sut/extract-path :content [{:name "name"} {:name "family"}] :lname)
                (hsql/format))))))

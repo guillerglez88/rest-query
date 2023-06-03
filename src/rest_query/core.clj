@@ -43,15 +43,16 @@
    pag-offset   page-start
    pag-limit    page-size})
 
-(defn refine [sql-map queryp params]
+(defn refine [sql-map base queryp params]
   (let [path (-> queryp :path (or []))
         alias (-> queryp :name (fields/make-alias))
         filter (get filters-map (:code queryp))]
     (-> (identity sql-map)
-        (fields/extract-path :resource path alias)
+        (fields/extract-path base path alias)
         (filter queryp params))))
 
-(defn make-query [type queryps params]
+(defn make-sql-map [type base queryps params]
   (let [sql-map (fields/all-by-type type)]
     (->> (identity queryps)
-         (reduce (fn [acc curr] (refine acc curr params)) sql-map))))
+         (reduce (fn [acc curr] (refine acc base curr params)) sql-map)
+         (identity))))

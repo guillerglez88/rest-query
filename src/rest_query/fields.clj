@@ -4,6 +4,12 @@
    [honey.sql.helpers :refer [from inner-join select]]
    [honey.sql.pg-ops :refer [at>]]))
 
+(defn contains-alias? [sql-map alias]
+  (->> (:inner-join sql-map)
+       (filter vector?)
+       (some #(-> % second (= alias)))
+       (boolean)))
+
 (defn make-alias [& parts]
   (->> parts
        (filter (complement nil?))
@@ -20,16 +26,21 @@
 
 (defn extract-prop [sql-map base path-elem alias]
   (let [field (:name path-elem)]
-    (inner-join sql-map [[:jsonb_extract_path base field] alias] true)))
+    (if (contains-alias? sql-map alias)
+      (identity sql-map)
+      (inner-join sql-map [[:jsonb_extract_path base field] alias] true))))
 
 (defn extract-coll [sql-map base path-elem alias]
   (let [field (:name path-elem)
         prop-alias (make-alias base field)]
-    (-> (extract-prop sql-map base path-elem prop-alias)
-        (inner-join [[:jsonb_array_elements prop-alias] alias]
-                    (if-let [filter (:filter path-elem)]
-                      [[at> alias [:lift filter]]]
-                      true)))))
+    (if (contains-alias? sql-map alias)
+      (identity sql-map)
+      (-> (extract-prop sql-map base path-elem prop-alias)
+          (inner-join [[:jsonb_array_elements prop-alias] alias]
+                      (if-let [filter (:filter path-elem)]
+                        [[at> alias [:lift filter]]]
+                        true))))))
+
 (defn extract-field [sql-map base path-elem alias]
   (cond
     (:meta path-elem)       sql-map ;; TODO: implement meta fields access
