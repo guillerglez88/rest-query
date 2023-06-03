@@ -3,7 +3,8 @@
  {"central" {:url "https://repo1.maven.org/maven2/"}
   "clojars" {:url "https://repo.clojars.org/"}}
  :deps
- {org.clojure/clojure {:mvn/version "1.11.1"}}
+ {org.clojure/clojure {:mvn/version "1.11.1"}
+  com.github.seancorfield/honeysql {:git/tag "v2.4.947" :git/sha "fd64353"}}
  :aliases
  ;; clj -M:cider:test
  {:cider
