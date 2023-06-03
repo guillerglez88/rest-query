@@ -11,10 +11,16 @@
   (let [alias (fields/make-alias field)]
     (where sql-map [:= [:cast alias :text] (str "\"" value "\"")])))
 
+(defn page-start [sql-map start]
+  (offset sql-map start))
+
+(defn page-size [sql-map count]
+  (limit sql-map count))
+
 (defn page [sql-map start count]
-  (-> sql-map
-      (offset start)
-      (limit count)))
+  (-> (identity sql-map)
+      (page-start start)
+      (page-size count)))
 
 (defn total [sql-map]
   (-> sql-map

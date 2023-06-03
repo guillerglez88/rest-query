@@ -33,6 +33,26 @@
   (testing "Can paginate"
     (is (= [(str "SELECT res.* "
                  "FROM Resource AS res "
+                 "LIMIT")
+            128]
+           (-> (fields/all-by-type :Resource)
+               (sut/page-size 128)
+               (hsql/format))))))
+
+(deftest paginate-test
+  (testing "Can paginate"
+    (is (= [(str "SELECT res.* "
+                 "FROM Resource AS res "
+                 "OFFSET")
+            10]
+           (-> (fields/all-by-type :Resource)
+               (sut/page-start 10)
+               (hsql/format))))))
+
+(deftest paginate-test
+  (testing "Can paginate"
+    (is (= [(str "SELECT res.* "
+                 "FROM Resource AS res "
                  "LIMIT ? OFFSET ?")
             128, 10]
            (-> (fields/all-by-type :Resource)
