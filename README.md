@@ -14,32 +14,32 @@ Ability to convert raw URL and query-string params metadata into SQL query. By d
                             [{:name :fname, :code :filters/text, :path [{:name "name"} {:name "given", :collection true}]}
                              {:name :lname, :code :filters/text, :path [{:name "name"} {:name "family"}]}
                              {:name :gender, :code :filters/keyword, :path [{:name "gender"}]},
-                             {:name :_offset :code :page/offset :value 0}
-                             {:name :_limit, :code :page/limit, :value 128}])
+                             {:name :_offset :code :page/offset :default 0}
+                             {:name :_limit, :code :page/limit, :default 128}])
 ;; =>
 ;;  {:from :Person
-;;  :page ["SELECT res.* 
-;;          FROM Person AS res 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE 
-;;          INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
-;;          WHERE (CAST(fname AS text) LIKE ?) 
-;;              AND (CAST(lname AS text) LIKE ?) 
-;;              AND (CAST(gender AS text) = ?) LIMIT ? OFFSET ?"
-;;          "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 5 0]
-;;  :total ["SELECT COUNT(*) AS count 
-;;          FROM Person AS res 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE 
-;;          INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
-;;          WHERE (CAST(fname AS text) LIKE ?) 
-;;              AND (CAST(lname AS text) LIKE ?) 
-;;              AND (CAST(gender AS text) = ?)"
-;;          "name" "given" "family" "gender" "%john%" "%doe%" "\"M\""]}
+;;   :page ["SELECT res.* 
+;;           FROM Person AS res 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE 
+;;           INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
+;;           WHERE (CAST(fname AS text) LIKE ?) 
+;;               AND (CAST(lname AS text) LIKE ?) 
+;;               AND (CAST(gender AS text) = ?) LIMIT ? OFFSET ?"
+;;           "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 5 0]
+;;   :total ["SELECT COUNT(*) AS count 
+;;           FROM Person AS res 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE 
+;;           INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
+;;           WHERE (CAST(fname AS text) LIKE ?) 
+;;               AND (CAST(lname AS text) LIKE ?) 
+;;               AND (CAST(gender AS text) = ?)"
+;;           "name" "given" "family" "gender" "%john%" "%doe%" "\"M\""]}
 ```
 
 ### Fns [wip]

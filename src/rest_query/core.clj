@@ -30,7 +30,7 @@
   (let [field (:name queryp)
         value (-> params
                   (get (name field))
-                  (or (:value queryp))
+                  (or (:default queryp))
                   (str)
                   (Integer/parseInt))]
     (filters/page-start sql-map value)))
@@ -39,7 +39,7 @@
   (let [field (:name queryp)
         value (-> params
                   (get (name field))
-                  (or (:value queryp))
+                  (or (:default queryp))
                   (str)
                   (Integer/parseInt))]
     (filters/page-size sql-map value)))
