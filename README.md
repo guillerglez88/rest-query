@@ -87,15 +87,24 @@ Convert url-map into a honey.sql sql-map
 for manipulation.
 ```
 
-### Queryp codes
+### Path
 
-| code               | translated to        | desc               | status      |
-|--------------------|----------------------|--------------------|-------------|
-| `:filters/text`    | `name like '%john%'` | contains text      | implemented |
-| `:filters/keyword` | `name = 'john'`      | match exact        | implemented |
-| `:filters/url`     |                      |                    | planned     |
-| `:filters/number`  | `age = 35`           |                    | partial     |
-| `:filters/date`    |                      |                    | planned     |
-| `:page/offset`     | `OFFSET 0`           | page starting item | implemented |
-| `:page/limit`      | `LIMIT 128`          | page size          | implemented |
-|                    |                      |                    |             |
+| key      | required | default | example                                                   |
+|----------|----------|---------|-----------------------------------------------------------|
+| `prop`   | yes      |         | `{:prop "name"}`                                          |
+| `coll`   | no       | `false` | `{:prop "contacts", :coll true}`                          |
+| `filter` | no       | `{}`    | `{:prop "contacts", :coll true, :filter {:type "email"}}` |
+|          |          |         |                                                           |
+
+### Filters
+
+| code               | query-string  | translated to                            | status  |
+|--------------------|---------------|------------------------------------------|---------|
+| `:filters/text`    | `&name=john`  | `WHERE CAST(name AS TEXT) like '%john%'` | ready   |
+| `:filters/keyword` | `&gender=M`   | `WHERE CAST(gender AS TEXT) = 'M'`       | ready   |
+| `:filters/url`     |               |                                          | planned |
+| `:filters/number`  | `&age=35`     | `WHERE CAST(age AS DECIMAL) = 35`        | partial |
+| `:filters/date`    |               |                                          | planned |
+| `:page/offset`     | `&_offset=0`  | `OFFSET 0`                               | ready   |
+| `:page/limit`      | `&_limit=128` | `LIMIT 128`                              | ready   |
+|                    |               |                                          |         |
