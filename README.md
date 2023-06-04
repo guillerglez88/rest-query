@@ -63,15 +63,23 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 
 ## Reference [wip]
 
-### Queryp codes [wip]
+### Fns
 
-| code             | example              | desc               | status      |
-|------------------|----------------------|--------------------|-------------|
-| :filters/text    | `name like '%john%'` | contains text      | implemented |
-| :filters/keyword | `name = 'john'`      | match exact        | implemented |
-| :filters/url     |                      |                    | planned     |
-| :filters/number  |                      |                    | planned     |
-| :filters/date    |                      |                    | planned     |
-| :page/offset     | `OFFSET 0`           | page starting item | implemented |
-| :page/limit      | `LIMIT 128`          | page size          | implemented |
-|                  |                      |                    |             |
+``` clojure
+(rq/url->query url base queryps)
+
+(rq/make-query url-map base queryps)
+```
+
+### Queryp codes
+
+| code               | translated to        | desc               | status      |
+|--------------------|----------------------|--------------------|-------------|
+| `:filters/text`    | `name like '%john%'` | contains text      | implemented |
+| `:filters/keyword` | `name = 'john'`      | match exact        | implemented |
+| `:filters/url`     |                      |                    | planned     |
+| `:filters/number`  |                      |                    | planned     |
+| `:filters/date`    |                      |                    | planned     |
+| `:page/offset`     | `OFFSET 0`           | page starting item | implemented |
+| `:page/limit`      | `LIMIT 128`          | page size          | implemented |
+|                    |                      |                    |             |

@@ -61,17 +61,18 @@
         (fields/extract-path base path alias)
         (filter queryp params))))
 
-(defn make-sql-map [type base queryps params]
-  (let [sql-map (fields/all-by-type type)]
+(defn make-sql-map [url-map base queryps]
+  (let [sql-map (-> url-map :from fields/all-by-type)]
     (->> (identity queryps)
-         (reduce (fn [acc curr] (refine acc base curr params)) sql-map)
+         (reduce (fn [acc curr] (refine acc base curr (:params url-map))) sql-map)
          (identity))))
 
-(defn url->query [url base queryps]
-  (let [{type :from
-         params :params} (util/url->map url)
-        query (make-sql-map type base queryps params)
+(defn make-query [url-map base queryps]
+  (let [query (make-sql-map url-map base queryps)
         total (filters/total query)]
-    (hash-map :from type
+    (hash-map :from (:from url-map)
               :page (hsql/format query)
               :total (hsql/format total))))
+
+(defn url->query [url base queryps]
+  (-> url util/url->map (make-query base queryps)))

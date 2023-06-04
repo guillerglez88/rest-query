@@ -11,9 +11,40 @@
    {:name :_offset :code :page/offset :default 0}
    {:name :_limit, :code :page/limit, :default 128}])
 
-(defn get-queryps [names]
-  (->> (identity queryps)
-       (filter #(contains? names (:name %)))))
+(deftest make-query-test
+  (testing "Can converst url-map into a query map"
+    (is (= {:from :Person
+            :page [(str "SELECT res.* "
+                        "FROM Person AS res "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE "
+                        "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE "
+                        "WHERE (CAST(fname AS text) LIKE ?) "
+                          "AND (CAST(lname AS text) LIKE ?) "
+                          "AND (CAST(gender AS text) = ?) "
+                        "LIMIT ? OFFSET ?")
+                   "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 5 0]
+            :total [(str "SELECT COUNT(*) AS count "
+                         "FROM Person AS res "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE "
+                         "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE "
+                         "WHERE (CAST(fname AS text) LIKE ?) "
+                           "AND (CAST(lname AS text) LIKE ?) "
+                           "AND (CAST(gender AS text) = ?)")
+                    "name" "given" "family" "gender" "%john%" "%doe%" "\"M\""]}
+           (sut/make-query {:from :Person
+                            :params {"fname"   "john"
+                                     "lname"   "doe"
+                                     "gender"  "M"
+                                     "_offset" 0
+                                     "_limit"  5}}
+                           :resource
+                           queryps)))))
 
 (deftest url->query-test
   (testing "Can converst url into a query map"
@@ -61,7 +92,9 @@
                    "AND (CAST(lname AS text) LIKE ?) "
                    "AND (CAST(gender AS text) = ?) LIMIT ? OFFSET ?")
               "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 20 5]
-             (-> (sut/make-sql-map :Person :resource queryps params)
+             (-> (sut/make-sql-map {:from :Person, :params params}
+                                   :resource
+                                   queryps)
                  (hsql/format))))
       (is (= [(str "SELECT res.* "
                    "FROM Person AS res "
@@ -74,5 +107,7 @@
                    "AND (CAST(lname AS text) LIKE ?) "
                    "AND (CAST(gender AS text) = ?) LIMIT ? OFFSET ?")
               "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 128 0]
-             (-> (sut/make-sql-map :Person :resource queryps (select-keys params ["fname" "lname" "gender"]))
+             (-> (sut/make-sql-map {:from :Person, :params (select-keys params ["fname" "lname" "gender"])}
+                                   :resource
+                                   queryps)
                  (hsql/format)))))))
