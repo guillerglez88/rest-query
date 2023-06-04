@@ -4,7 +4,7 @@
 
 (deftest uri->map
   (testing "Can convert uri into a map with the data needed for query"
-    (is (= {:from "Person"
+    (is (= {:from :Person
             :params {"fname" "john"
                      "lname" "doe"
                      "gender" "M"

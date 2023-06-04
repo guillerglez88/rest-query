@@ -1,7 +1,9 @@
 (ns rest-query.core
   (:require
+   [honey.sql :as hsql]
    [rest-query.fields :as fields]
-   [rest-query.filters :as filters]))
+   [rest-query.filters :as filters]
+   [rest-query.util :as util]))
 
 (def flt-text     :filters/text)
 (def flt-keyword  :filters/keyword)
@@ -26,12 +28,20 @@
 
 (defn page-start [sql-map queryp params]
   (let [field (:name queryp)
-        value (-> params (get (name field)) (or (:value queryp)))]
+        value (-> params
+                  (get (name field))
+                  (or (:value queryp))
+                  (str)
+                  (Integer/parseInt))]
     (filters/page-start sql-map value)))
 
 (defn page-size [sql-map queryp params]
   (let [field (:name queryp)
-        value (-> params (get (name field)) (or (:value queryp)))]
+        value (-> params
+                  (get (name field))
+                  (or (:value queryp))
+                  (str)
+                  (Integer/parseInt))]
     (filters/page-size sql-map value)))
 
 (def filters-map
@@ -56,3 +66,12 @@
     (->> (identity queryps)
          (reduce (fn [acc curr] (refine acc base curr params)) sql-map)
          (identity))))
+
+(defn url->query [url base queryps]
+  (let [{type :from
+         params :params} (util/url->map url)
+        query (make-sql-map type base queryps params)
+        total (filters/total query)]
+    (hash-map :from type
+              :page (hsql/format query)
+              :total (hsql/format total))))

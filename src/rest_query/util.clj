@@ -9,5 +9,5 @@
                   (filter (complement str/blank?))
                   (first))
         params (-> uri-map :query (query-string->map {:keywordize? false}))]
-    (hash-map :from type
+    (hash-map :from (keyword type)
               :params params)))
