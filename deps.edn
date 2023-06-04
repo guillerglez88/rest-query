@@ -3,14 +3,15 @@
  {"central" {:url "https://repo1.maven.org/maven2/"}
   "clojars" {:url "https://repo.clojars.org/"}}
  :deps
- {org.clojure/clojure {:mvn/version "1.11.1"}
-  com.github.seancorfield/honeysql {:git/tag "v2.4.947" :git/sha "fd64353"}}
+ {org.clojure/clojure               {:mvn/version "1.11.1"}
+  com.github.seancorfield/honeysql  {:git/tag "v2.4.947" :git/sha "fd64353"}
+  lambdaisland/uri                  {:mvn/version "1.13.95"}}
  :aliases
  ;; clj -M:cider:test
  {:cider
   {:extra-deps
-   {nrepl/nrepl {:mvn/version "0.9.0"}
-    cider/cider-nrepl {:mvn/version "0.28.4"}
+   {nrepl/nrepl                   {:mvn/version "0.9.0"}
+    cider/cider-nrepl             {:mvn/version "0.28.4"}
     refactor-nrepl/refactor-nrepl {:mvn/version "3.5.2"}}
    :main-opts ["-m" "nrepl.cmdline"
                "--interactive"
@@ -19,8 +20,8 @@
   :test
   {:extra-paths ["test"]
    :extra-deps
-   {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1", :git/sha "dfb30dd"}
-    org.clojure/core.cache {:mvn/version "1.0.225"}}
+   {io.github.cognitect-labs/test-runner  {:git/tag "v0.5.1", :git/sha "dfb30dd"}
+    org.clojure/core.cache                {:mvn/version "1.0.225"}}
    :exec-fn cognitect.test-runner.api/test
    :main-opts ["-m" "cognitect.test-runner"]}
   :kondo
