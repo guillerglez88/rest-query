@@ -9,13 +9,17 @@ Ability to convert raw URL and query-string params metadata into SQL query. By d
 ## Reference [wip]
 
 ```clj
-(rest-query.core/url->query "/Person?fname=john&lname=doe&gender=M&_offset=0&_limit=5" 
-                            :resource 
-                            [{:name :fname, :code :filters/text, :path [{:name "name"} {:name "given", :collection true}]}
-                             {:name :lname, :code :filters/text, :path [{:name "name"} {:name "family"}]}
-                             {:name :gender, :code :filters/keyword, :path [{:name "gender"}]},
-                             {:name :_offset :code :page/offset :default 0}
-                             {:name :_limit, :code :page/limit, :default 128}])
+(url->query "/Person?fname=john&lname=doe&gender=M&_offset=0&_limit=5" 
+            :resource 
+            [{:name :fname     :code :filters/text    :path [{:name "name"} 
+                                                             {:name "given" 
+                                                              :collection true}]}
+             {:name :lname     :code :filters/text    :path [{:name "name"} 
+                                                             {:name "family"}]}
+             {:name :gender    :code :filters/keyword :path [{:name "gender"}]}
+             {:name :_offset   :code :page/offset     :path []                      :default 0}
+             {:name :_limit    :code :page/limit      :path []                      :default 128}])
+
 ;; =>
 ;;  {:from :Person
 ;;   :page ["SELECT res.* 
