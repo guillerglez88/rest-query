@@ -5,11 +5,15 @@
 
 (defn contains-text [sql-map field value]
   (let [alias (fields/make-alias field)]
-    (where sql-map [:like [:cast alias :text] (str "%" value "%")])))
+    (where sql-map [:like [:cast alias :TEXT] (str "%" value "%")])))
 
 (defn match-exact [sql-map field value]
   (let [alias (fields/make-alias field)]
-    (where sql-map [:= [:cast alias :text] (str "\"" value "\"")])))
+    (where sql-map [:= [:cast alias :TEXT] (str "\"" value "\"")])))
+
+(defn number [sql-map field value]
+  (let [alias (fields/make-alias field)]
+    (where sql-map [:= [:cast alias :DECIMAL] value])))
 
 (defn page-start [sql-map start]
   (offset sql-map start))

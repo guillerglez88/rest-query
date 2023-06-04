@@ -94,7 +94,7 @@ for manipulation.
 | `:filters/text`    | `name like '%john%'` | contains text      | implemented |
 | `:filters/keyword` | `name = 'john'`      | match exact        | implemented |
 | `:filters/url`     |                      |                    | planned     |
-| `:filters/number`  |                      |                    | planned     |
+| `:filters/number`  | `age = 35`           |                    | partial     |
 | `:filters/date`    |                      |                    | planned     |
 | `:page/offset`     | `OFFSET 0`           | page starting item | implemented |
 | `:page/limit`      | `LIMIT 128`          | page size          | implemented |

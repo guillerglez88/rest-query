@@ -26,6 +26,13 @@
         value (get params (name field))]
     (filters/match-exact sql-map field value)))
 
+(defn number [sql-map queryp params]
+  (let [field (:name queryp)
+        value (-> params
+                  (get (name field))
+                  (bigdec))]
+    (filters/number sql-map field value)))
+
 (defn page-start [sql-map queryp params]
   (let [field (:name queryp)
         value (-> params
@@ -48,7 +55,7 @@
   {flt-text     contains-text
    flt-keyword  match-exact
    flt-url      not-implemented
-   flt-number   not-implemented
+   flt-number   number
    flt-date     not-implemented
    pag-offset   page-start
    pag-limit    page-size})
@@ -64,6 +71,8 @@
 (defn make-sql-map [url-map base queryps]
   (let [sql-map (-> url-map :from fields/all-by-type)]
     (->> (identity queryps)
+         (filter #(or (contains? % :default)
+                      (contains? (:params url-map) (name (:name %)))))
          (reduce (fn [acc curr] (refine acc base curr (:params url-map))) sql-map)
          (identity))))
 

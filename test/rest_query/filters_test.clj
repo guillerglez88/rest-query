@@ -10,7 +10,7 @@
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
                  "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS name ON TRUE "
-                 "WHERE CAST(name AS text) LIKE ?")
+                 "WHERE CAST(name AS TEXT) LIKE ?")
             "name" "%john%"]
            (-> (fields/all-by-type :Person)
                (fields/extract-path :content [{:prop "name"}] :name)
@@ -22,28 +22,40 @@
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
                  "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS name ON TRUE "
-                 "WHERE CAST(name AS text) = ?")
+                 "WHERE CAST(name AS TEXT) = ?")
             "name" "\"John\""]
            (-> (fields/all-by-type :Person)
                (fields/extract-path :content [{:prop "name"}] :name)
                (sut/match-exact :name "John")
                (hsql/format))))))
 
-(deftest paginate-test
-  (testing "Can paginate"
+(deftest number-test
+  (testing "Can filter by number equals"
+    (is (= [(str "SELECT res.* "
+                 "FROM Person AS res "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS age ON TRUE "
+                 "WHERE CAST(age AS DECIMAL) = ?")
+            "age" 35]
+           (-> (fields/all-by-type :Person)
+               (fields/extract-path :content [{:prop "age"}] :age)
+               (sut/number :age 35)
+               (hsql/format))))))
+
+(deftest page-size-test
+  (testing "Can set page size"
     (is (= [(str "SELECT res.* "
                  "FROM Resource AS res "
-                 "LIMIT")
+                 "LIMIT ?")
             128]
            (-> (fields/all-by-type :Resource)
                (sut/page-size 128)
                (hsql/format))))))
 
-(deftest paginate-test
-  (testing "Can paginate"
+(deftest page-start-test
+  (testing "Can set page start"
     (is (= [(str "SELECT res.* "
                  "FROM Resource AS res "
-                 "OFFSET")
+                 "OFFSET ?")
             10]
            (-> (fields/all-by-type :Resource)
                (sut/page-start 10)
