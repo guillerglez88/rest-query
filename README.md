@@ -108,3 +108,17 @@ for manipulation.
 | `:page/offset`     | `&_offset=0`  | `OFFSET 0`                               | ready   |
 | `:page/limit`      | `&_limit=128` | `LIMIT 128`                              | ready   |
 |                    |               |                                          |         |
+
+### Operators
+
+| op                                        | example                   |
+|-------------------------------------------|---------------------------|
+| equals                                    | `&age=eq:35`              |
+| less than                                 | `&age=lt:2`               |
+| less than or equal                        | `&age=le:2`               |
+| greater than                              | `&age=gt:21`              |
+| greater than or equal                     | `&age=ge:21`              |
+| escape `:` to be interpreted as delimiter | `&time=esc:8:00-17:30`    |
+|                                           | `&desc=esc:foo%20bar:baz` |
+|                                           |                           |
+    

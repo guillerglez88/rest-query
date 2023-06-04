@@ -3,6 +3,19 @@
    [honey.sql.helpers :refer [limit offset select where]]
    [rest-query.fields :as fields]))
 
+(def op-eq :op/eq)
+(def op-le :op/le)
+(def op-lt :op/lt)
+(def op-ge :op/ge)
+(def op-gt :op/gt)
+
+(def num-op-map
+  {op-eq  :=
+   op-le  :<=
+   op-lt  :<
+   op-ge  :>=
+   op-gt  :>})
+
 (defn contains-text [sql-map field value]
   (let [alias (fields/make-alias field)]
     (where sql-map [:like [:cast alias :TEXT] (str "%" value "%")])))
@@ -11,9 +24,10 @@
   (let [alias (fields/make-alias field)]
     (where sql-map [:= [:cast alias :TEXT] (str "\"" value "\"")])))
 
-(defn number [sql-map field value]
-  (let [alias (fields/make-alias field)]
-    (where sql-map [:= [:cast alias :DECIMAL] value])))
+(defn number [sql-map field value op]
+  (let [alias (fields/make-alias field)
+        sql-op (get num-op-map (or op op-eq))]
+    (where sql-map [sql-op [:cast alias :DECIMAL] value])))
 
 (defn page-start [sql-map start]
   (offset sql-map start))

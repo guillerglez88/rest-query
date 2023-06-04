@@ -11,3 +11,13 @@
         params (-> uri-map :query (query-string->map {:keywordize? false}))]
     (hash-map :from (keyword type)
               :params params)))
+
+(defn get-param [params key & {:keys [default parser]
+                               :or {default nil, parser identity}}]
+  (let [value (-> params (get (name key)) (or default) (str))
+        [fst snd] (->> (str/split value #":" 2)
+                       (filter (complement str/blank?))
+                       (filter #(not= "esc" %)))]
+    (if (nil? snd)
+      (vector (parser fst))
+      (vector (parser snd) (keyword "op" fst)))))

@@ -38,7 +38,17 @@
             "age" 35]
            (-> (fields/all-by-type :Person)
                (fields/extract-path :content [{:prop "age"}] :age)
-               (sut/number :age 35)
+               (sut/number :age 35 :op/eq)
+               (hsql/format)))))
+  (testing "Can filter by number <= n"
+    (is (= [(str "SELECT res.* "
+                 "FROM Person AS res "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS age ON TRUE "
+                 "WHERE CAST(age AS DECIMAL) <= ?")
+            "age" 2]
+           (-> (fields/all-by-type :Person)
+               (fields/extract-path :content [{:prop "age"}] :age)
+               (sut/number :age 2 :op/le)
                (hsql/format))))))
 
 (deftest page-size-test

@@ -18,38 +18,30 @@
 
 (defn contains-text [sql-map queryp params]
   (let [field (:name queryp)
-        value (get params (name field))]
-    (filters/contains-text sql-map field value)))
+        [val _op] (util/get-param params field)]
+    (filters/contains-text sql-map field val)))
 
 (defn match-exact [sql-map queryp params]
   (let [field (:name queryp)
-        value (get params (name field))]
-    (filters/match-exact sql-map field value)))
+        [val _op] (util/get-param params field)]
+    (filters/match-exact sql-map field val)))
 
 (defn number [sql-map queryp params]
   (let [field (:name queryp)
-        value (-> params
-                  (get (name field))
-                  (bigdec))]
-    (filters/number sql-map field value)))
+        [val op] (util/get-param params field)]
+    (filters/number sql-map field (bigdec val) op)))
 
 (defn page-start [sql-map queryp params]
   (let [field (:name queryp)
-        value (-> params
-                  (get (name field))
-                  (or (:default queryp))
-                  (str)
-                  (Integer/parseInt))]
-    (filters/page-start sql-map value)))
+        [val] (util/get-param params field {:default (:default queryp)
+                                            :parser #(Integer/parseInt %)})]
+    (filters/page-start sql-map val)))
 
 (defn page-size [sql-map queryp params]
   (let [field (:name queryp)
-        value (-> params
-                  (get (name field))
-                  (or (:default queryp))
-                  (str)
-                  (Integer/parseInt))]
-    (filters/page-size sql-map value)))
+        [val] (util/get-param params field {:default (:default queryp)
+                                            :parser #(Integer/parseInt %)})]
+    (filters/page-size sql-map val)))
 
 (def filters-map
   {flt-text     contains-text
@@ -80,8 +72,8 @@
   (let [query (make-sql-map url-map base queryps)
         total (filters/total query)]
     (hash-map :from (:from url-map)
-              :page (hsql/format query)
-              :total (hsql/format total))))
+              :page (hsql/format query {:numbered true})
+              :total (hsql/format total {:numbered true}))))
 
 (defn url->query [url base queryps]
   (-> url util/url->map (make-query base queryps)))
