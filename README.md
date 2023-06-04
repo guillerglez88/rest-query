@@ -68,7 +68,23 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 ``` clojure
 (rq/url->query url base queryps)
 
+Convert url string into a query map.
+```
+
+``` clojure
 (rq/make-query url-map base queryps)
+
+Convert url-map string into a query map. 
+Convenience overload for cases where url 
+has been already parsed, by example: in 
+a ring handler.
+```
+
+``` clojure
+(rq/make-sql-map url-map base queryps)
+
+Convert url-map into a honey.sql sql-map 
+for manipulation.
 ```
 
 ### Queryp codes
