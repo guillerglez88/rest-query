@@ -13,7 +13,7 @@
                  "WHERE CAST(name AS text) LIKE ?")
             "name" "%john%"]
            (-> (fields/all-by-type :Person)
-               (fields/extract-path :content [{:name "name"}] :name)
+               (fields/extract-path :content [{:prop "name"}] :name)
                (sut/contains-text :name "john")
                (hsql/format))))))
 
@@ -25,7 +25,7 @@
                  "WHERE CAST(name AS text) = ?")
             "name" "\"John\""]
            (-> (fields/all-by-type :Person)
-               (fields/extract-path :content [{:name "name"}] :name)
+               (fields/extract-path :content [{:prop "name"}] :name)
                (sut/match-exact :name "John")
                (hsql/format))))))
 

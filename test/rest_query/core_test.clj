@@ -5,9 +5,9 @@
    [honey.sql :as hsql]))
 
 (def queryps
-  [{:name :fname, :code :filters/text, :path [{:name "name"} {:name "given", :collection true}]}
-   {:name :lname, :code :filters/text, :path [{:name "name"} {:name "family"}]}
-   {:name :gender, :code :filters/keyword, :path [{:name "gender"}]},
+  [{:name :fname, :code :filters/text, :path [{:prop "name"} {:prop "given", :coll true}]}
+   {:name :lname, :code :filters/text, :path [{:prop "name"} {:prop "family"}]}
+   {:name :gender, :code :filters/keyword, :path [{:prop "gender"}]},
    {:name :_offset :code :page/offset :default 0}
    {:name :_limit, :code :page/limit, :default 128}])
 

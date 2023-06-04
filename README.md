@@ -11,14 +11,14 @@ Ability to convert raw URL and query-string params metadata into SQL query. By d
 ```clj
 (url->query "/Person?fname=john&lname=doe&gender=M&_offset=0&_limit=5" 
             :resource 
-            [{:name :fname     :code :filters/text    :path [{:name "name"} 
-                                                             {:name "given" 
-                                                              :collection true}]}
-             {:name :lname     :code :filters/text    :path [{:name "name"} 
-                                                             {:name "family"}]}
-             {:name :gender    :code :filters/keyword :path [{:name "gender"}]}
-             {:name :_offset   :code :page/offset     :path []                      :default 0}
-             {:name :_limit    :code :page/limit      :path []                      :default 128}])
+            [{:name :fname   :code :filters/text    :path [{:prop "name"} 
+                                                           {:prop "given" 
+                                                            :coll true}]}
+             {:name :lname   :code :filters/text    :path [{:prop "name"} 
+                                                           {:prop "family"}]}
+             {:name :gender  :code :filters/keyword :path [{:prop "gender"}]}
+             {:name :_offset :code :page/offset     :path []                  :default 0}
+             {:name :_limit  :code :page/limit      :path []                  :default 128}])
 
 ;; =>
 ;;  {:from :Person
