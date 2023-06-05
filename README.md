@@ -17,6 +17,7 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 
 ;; =>
 ;; {:from :Person
+;;  :hash "6c1dd451d83d6b1bbf32c3be55115785492a8cd4fbf073ef719a331869f6c370"
 ;;  :page ["SELECT res.*
 ;;          FROM Person AS res 
 ;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 

@@ -70,10 +70,14 @@
 
 (defn make-query [url-map queryps]
   (let [query (make-sql-map url-map queryps)
-        total (filters/total query)]
+        total (filters/total query)
+        fpage (hsql/format query {:numbered true})
+        ftotal (hsql/format total {:numbered true})
+        hash (util/calc-hash (first fpage))]
     (hash-map :from (:from url-map)
-              :page (hsql/format query {:numbered true})
-              :total (hsql/format total {:numbered true}))))
+              :hash hash
+              :page fpage
+              :total ftotal)))
 
 (defn url->query [url queryps]
   (-> url util/url->map (make-query queryps)))

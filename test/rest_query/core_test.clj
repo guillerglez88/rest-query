@@ -15,6 +15,7 @@
 (deftest make-query-test
   (testing "Can converst url-map into a query map"
     (is (= {:from :Person
+            :hash "2506516360ae11f6e2faebc7d6c8db94cc9e09cc259e0b7a229a5e8e0a2ddff7"
             :page [(str "SELECT res.* "
                         "FROM Person AS res "
                         "INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE "
@@ -49,6 +50,7 @@
 (deftest url->query-test
   (testing "Can converst url into a query map"
     (is (= {:from :Person
+            :hash "6c1dd451d83d6b1bbf32c3be55115785492a8cd4fbf073ef719a331869f6c370"
             :page [(str "SELECT res.* "
                         "FROM Person AS res "
                         "INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE "
