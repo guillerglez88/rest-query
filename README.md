@@ -47,7 +47,7 @@ Url query-string is the way to query over restful apis. Query-string params usua
 ;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M]}
 ```
 
-**queryps**
+**Query Params Metadata**
 
 ```clojure
 (def queryps
@@ -59,20 +59,19 @@ Url query-string is the way to query over restful apis. Query-string params usua
    {:name :_limit, :code :page/limit, :default 128}])
 ```
 
-**:Person**
+**Postgres database table**
 
 ```
-| :id | :resource                    |
-|-----|------------------------------|
-| 1   | {                            |
-|     |   "type": "Person",          |
-|     |   "name": {                  |
-|     |     "given": ["John", "M."], |
-|     |     "family": "Doe"},        |
-|     |   },                         |
-|     |   "gender": "M"              |
-|     | }                            |
-|     |                              |
+| id | resource                     |
+|----|------------------------------|
+| 1  | {                            |
+|    |   "type": "Person",          |
+|    |   "name": {                  |
+|    |     "given": ["John", "M."], |
+|    |     "family": "Doe"},        |
+|    |   },                         |
+|    |   "gender": "M"              |
+|    | }                            |
 ```
 
 ## Reference [wip]
@@ -82,23 +81,23 @@ Url query-string is the way to query over restful apis. Query-string params usua
 ``` clojure
 (rq/url->query url queryps)
 
-Convert url string into a query map.
+;; Convert url string into a query map.
 ```
 
 ``` clojure
 (rq/make-query url-map queryps)
 
-Convert url-map string into a query map. 
-Convenience overload for cases where url 
-has been already parsed, by example: in 
-a ring handler.
+;; Convert url-map string into a query map. 
+;; Convenience overload for cases where url 
+;; has been already parsed, by example: in 
+;; a ring handler.
 ```
 
 ``` clojure
 (rq/make-sql-map url-map queryps)
 
-Convert url-map into a honey.sql sql-map 
-for manipulation.
+;; Convert url-map into a honey.sql sql-map 
+;; for manipulation.
 ```
 
 ### Path
@@ -108,7 +107,6 @@ for manipulation.
 | `prop`   | yes      |         | `{:prop "name"}`                                          |
 | `coll`   | no       | `false` | `{:prop "contacts", :coll true}`                          |
 | `filter` | no       | `{}`    | `{:prop "contacts", :coll true, :filter {:type "email"}}` |
-|          |          |         |                                                           |
 
 ### Filters
 
@@ -121,7 +119,6 @@ for manipulation.
 | `:filters/date`    |               |                                          | planned |
 | `:page/offset`     | `&_offset=0`  | `OFFSET 0`                               | ready   |
 | `:page/limit`      | `&_limit=128` | `LIMIT 128`                              | ready   |
-|                    |               |                                          |         |
 
 ### Operators
 
@@ -134,5 +131,4 @@ for manipulation.
 | greater than or equal                     | `&age=ge:21`              |
 | escape `:` to be interpreted as delimiter | `&time=esc:8:00-17:30`    |
 |                                           | `&desc=esc:foo%20bar:baz` |
-|                                           |                           |
     
