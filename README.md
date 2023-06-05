@@ -8,7 +8,7 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 
 ## Usage
 
-```clj
+```clojure
 (ns user
   (:require
    [rest-query.core :as rq])
@@ -43,7 +43,8 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 ;;              AND (CAST(lname AS TEXT) LIKE ?) 
 ;;              AND (CAST(gender AS TEXT) = ?) 
 ;;              AND (CAST(age AS DECIMAL) = ?)"
-;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M]}```
+;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M]}
+```
 
 **queryps**
 
