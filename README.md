@@ -26,9 +26,9 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 ;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
 ;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS age ON TRUE 
 ;;          WHERE (CAST(fname AS TEXT) LIKE ?) 
-;;          AND (CAST(lname AS TEXT) LIKE ?) 
-;;          AND (CAST(gender AS TEXT) = ?) 
-;;          AND (CAST(age AS DECIMAL) = ?) 
+;;            AND (CAST(lname AS TEXT) LIKE ?) 
+;;            AND (CAST(gender AS TEXT) = ?) 
+;;            AND (CAST(age AS DECIMAL) = ?) 
 ;;          LIMIT ? OFFSET ?"
 ;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M 5 0]
 ;;  :total ["SELECT COUNT(*) AS count
@@ -40,9 +40,9 @@ Url query-string is the accurate way to query over restful apis. Query-string pa
 ;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
 ;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS age ON TRUE 
 ;;          WHERE (CAST(fname AS TEXT) LIKE ?) 
-;;              AND (CAST(lname AS TEXT) LIKE ?) 
-;;              AND (CAST(gender AS TEXT) = ?) 
-;;              AND (CAST(age AS DECIMAL) = ?)"
+;;            AND (CAST(lname AS TEXT) LIKE ?) 
+;;            AND (CAST(gender AS TEXT) = ?) 
+;;            AND (CAST(age AS DECIMAL) = ?)"
 ;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M]}
 ```
 
