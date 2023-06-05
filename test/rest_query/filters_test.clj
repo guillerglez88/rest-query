@@ -71,6 +71,27 @@
                (sut/page-start 10)
                (hsql/format))))))
 
+(deftest page-sort-test
+  (testing "Can sort results"
+    (is (= [(str "SELECT res.* "
+                 "FROM Resource AS res "
+                 "ORDER BY created DESC")]
+           (-> (fields/all-by-type :Resource)
+               (sut/page-sort "created" :op/desc)
+               (hsql/format))))
+    (is (= [(str "SELECT res.* "
+                 "FROM Resource AS res "
+                 "ORDER BY created ASC")]
+           (-> (fields/all-by-type :Resource)
+               (sut/page-sort "created" :op/asc)
+               (hsql/format))))
+    (is (= [(str "SELECT res.* "
+                 "FROM Resource AS res "
+                 "ORDER BY created ASC")]
+           (-> (fields/all-by-type :Resource)
+               (sut/page-sort "created" nil)
+               (hsql/format))))))
+
 (deftest paginate-test
   (testing "Can paginate"
     (is (= [(str "SELECT res.* "

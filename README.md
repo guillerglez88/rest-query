@@ -13,11 +13,11 @@ Url query-string is the way to query over restful apis. Query-string params usua
   (:require
    [rest-query.core :as rq])
 
-(rq/url->query "/Person?fname=john&lname=doe&gender=M&age=35&_offset=0&_limit=5" queryps)
+(rq/url->query "/Person?fname=john&lname=doe&gender=M&age=35&_sort=desc:created&_offset=0&_limit=5" queryps)
 
 ;; =>
 ;; {:from :Person
-;;  :hash "6c1dd451d83d6b1bbf32c3be55115785492a8cd4fbf073ef719a331869f6c370"
+;;  :hash "830c470be0170fd2adb30fe667b1aee70a310e55c69ec4cad027ce44d8f49002"
 ;;  :page ["SELECT res.*
 ;;          FROM Person AS res 
 ;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
@@ -30,20 +30,22 @@ Url query-string is the way to query over restful apis. Query-string params usua
 ;;            AND (CAST(lname AS TEXT) LIKE ?) 
 ;;            AND (CAST(gender AS TEXT) = ?) 
 ;;            AND (CAST(age AS DECIMAL) = ?) 
+;;          ORDER BY created DESC
 ;;          LIMIT ? OFFSET ?"
 ;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M 5 0]
 ;;  :total ["SELECT COUNT(*) AS count
-;;          FROM Person AS res 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE 
-;;          INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
-;;          INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS age ON TRUE 
-;;          WHERE (CAST(fname AS TEXT) LIKE ?) 
-;;            AND (CAST(lname AS TEXT) LIKE ?) 
-;;            AND (CAST(gender AS TEXT) = ?) 
-;;            AND (CAST(age AS DECIMAL) = ?)"
+;;           FROM Person AS res 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS resource_name ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS resource_name_given ON TRUE 
+;;           INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS fname ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource_name, ?) AS lname ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS gender ON TRUE 
+;;           INNER JOIN JSONB_EXTRACT_PATH(resource, ?) AS age ON TRUE 
+;;           WHERE (CAST(fname AS TEXT) LIKE ?) 
+;;             AND (CAST(lname AS TEXT) LIKE ?) 
+;;             AND (CAST(gender AS TEXT) = ?) 
+;;             AND (CAST(age AS DECIMAL) = ?)
+;;           ORDER BY created DESC"
 ;;          "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M]}
 ```
 
@@ -110,15 +112,16 @@ Url query-string is the way to query over restful apis. Query-string params usua
 
 ### Filters
 
-| code               | query-string  | translated to                            | status  |
-|--------------------|---------------|------------------------------------------|---------|
-| `:filters/text`    | `&name=john`  | `WHERE CAST(name AS TEXT) like '%john%'` | ready   |
-| `:filters/keyword` | `&gender=M`   | `WHERE CAST(gender AS TEXT) = 'M'`       | ready   |
-| `:filters/url`     |               |                                          | planned |
-| `:filters/number`  | `&age=35`     | `WHERE CAST(age AS DECIMAL) = 35`        | partial |
-| `:filters/date`    |               |                                          | planned |
-| `:page/offset`     | `&_offset=0`  | `OFFSET 0`                               | ready   |
-| `:page/limit`      | `&_limit=128` | `LIMIT 128`                              | ready   |
+| code               | query-string     | translated to                            | status  |
+|--------------------|------------------|------------------------------------------|---------|
+| `:filters/text`    | `&name=john`     | `WHERE CAST(name AS TEXT) like '%john%'` | ready   |
+| `:filters/keyword` | `&gender=M`      | `WHERE CAST(gender AS TEXT) = 'M'`       | ready   |
+| `:filters/url`     |                  |                                          | planned |
+| `:filters/number`  | `&age=35`        | `WHERE CAST(age AS DECIMAL) = 35`        | partial |
+| `:filters/date`    |                  |                                          | planned |
+| `:page/sort`       | `&_sort=created` | `ORDER BY created`                       | ready   |
+| `:page/offset`     | `&_offset=0`     | `OFFSET 0`                               | ready   |
+| `:page/limit`      | `&_limit=128`    | `LIMIT 128`                              | ready   |
 
 ### Operators
 
@@ -131,4 +134,7 @@ Url query-string is the way to query over restful apis. Query-string params usua
 | greater than or equal                     | `&age=ge:21`              |
 | escape `:` to be interpreted as delimiter | `&time=esc:8:00-17:30`    |
 |                                           | `&desc=esc:foo%20bar:baz` |
+| order by descending                       | `&_sort=desc:created`     |
+| order by ascending                        | `&_sort=created`          |
+|                                           | `&_sort=asc:created`      |
     

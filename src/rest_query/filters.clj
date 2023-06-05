@@ -1,13 +1,15 @@
 (ns rest-query.filters
   (:require
-   [honey.sql.helpers :refer [limit offset select where]]
+   [honey.sql.helpers :refer [limit offset select where order-by]]
    [rest-query.fields :as fields]))
 
-(def op-eq :op/eq)
-(def op-le :op/le)
-(def op-lt :op/lt)
-(def op-ge :op/ge)
-(def op-gt :op/gt)
+(def op-eq    :op/eq)
+(def op-le    :op/le)
+(def op-lt    :op/lt)
+(def op-ge    :op/ge)
+(def op-gt    :op/gt)
+(def op-asc   :op/asc)
+(def op-desc  :op/desc)
 
 (def num-op-map
   {op-eq  :=
@@ -15,6 +17,10 @@
    op-lt  :<
    op-ge  :>=
    op-gt  :>})
+
+(def sort-op-map
+  {op-asc   nil
+   op-desc  :desc})
 
 (defn contains-text [sql-map field value]
   (let [alias (fields/make-alias field)]
@@ -34,6 +40,11 @@
 
 (defn page-size [sql-map count]
   (limit sql-map count))
+
+(defn page-sort [sql-map field op]
+  (let [alias (fields/make-alias field)
+        sql-op (get sort-op-map (or op op-asc))]
+    (order-by sql-map [alias (when sql-op sql-op)])))
 
 (defn page [sql-map start count]
   (-> (identity sql-map)

@@ -12,6 +12,7 @@
 (def flt-date     :filters/date)
 (def pag-offset   :page/offset)
 (def pag-limit    :page/limit)
+(def pag-sort     :page/sort)
 
 (defn not-implemented [sql-map _queryp _params]
   sql-map)
@@ -43,6 +44,11 @@
                                             :parser #(Integer/parseInt %)})]
     (filters/page-size sql-map val)))
 
+(defn page-sort [sql-map queryp params]
+  (let [field (:name queryp)
+        [val op] (util/get-param params field {:default (:default queryp)})]
+    (filters/page-sort sql-map val op)))
+
 (def filters-map
   {flt-text     contains-text
    flt-keyword  match-exact
@@ -50,7 +56,8 @@
    flt-number   number
    flt-date     not-implemented
    pag-offset   page-start
-   pag-limit    page-size})
+   pag-limit    page-size
+   pag-sort     page-sort})
 
 (defn refine [sql-map queryp params]
   (let [path (-> queryp :path (or []))
