@@ -1,6 +1,6 @@
 # rest-query
 
-Clojure library for translating url into a database query. Powered by [honey.sql](https://github.com/seancorfield/honeysql).
+Clojure library for translating url into a database query. Powered by [honey.sql](https://github.com/seancorfield/honeysql). Inspired by [HL7](https://www.hl7.org/fhir/search.html).
 
 ## Motivation
 
