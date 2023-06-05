@@ -1,7 +1,9 @@
 (ns rest-query.util
   (:require
    [clojure.string :as str]
-   [lambdaisland.uri :as uri :refer [query-string->map uri]]))
+   [lambdaisland.uri :as uri :refer [query-string->map uri]])
+  (:import
+   [java.security MessageDigest]))
 
 (defn url->map [url]
   (let [uri-map (uri url)
@@ -21,3 +23,10 @@
     (if (nil? snd)
       (vector (parser fst))
       (vector (parser snd) (keyword "op" fst)))))
+
+(defn calc-hash [payload]
+  (let [sha256 (MessageDigest/getInstance "SHA-256")]
+    (->> (.getBytes payload "UTF-8")
+         (.digest sha256)
+         (map (partial format "%02x"))
+         (apply str))))

@@ -36,3 +36,8 @@
     (is (= [128]
            (sut/get-param {"foo" "bar"} :_limit {:default 128
                                                  :parser #(Integer/parseInt %)})))))
+
+(deftest calc-hash-test
+  (testing "Can calc digest from string"
+    (is (= "24efa410601485f435ca2a655ee5bc14707f030c923ad7be9329eb45c07fc40c"
+           (sut/calc-hash "SELECT id, resource, created, modified FROM Resource LIMIT ? OFFSET ?")))))
