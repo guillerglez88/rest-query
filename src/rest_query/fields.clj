@@ -25,34 +25,37 @@
         (from [type :res])))
 
 (defn extract-prop [sql-map base path-elem alias]
-  (let [field (:prop path-elem)]
-    (if (contains-alias? sql-map alias)
-      (identity sql-map)
-      (inner-join sql-map [[:jsonb_extract_path base field] alias] true))))
+  (let [field (:field path-elem)]
+    (inner-join sql-map [[:jsonb_extract_path base field] alias] true)))
 
 (defn extract-coll [sql-map base path-elem alias]
-  (let [field (:prop path-elem)
+  (let [field (:field path-elem)
         prop-alias (make-alias base field)]
-    (if (contains-alias? sql-map alias)
-      (identity sql-map)
-      (-> (extract-prop sql-map base path-elem prop-alias)
-          (inner-join [[:jsonb_array_elements prop-alias] alias]
-                      (if-let [filter (:filter path-elem)]
-                        [[at> alias [:lift filter]]]
-                        true))))))
+    (-> (extract-prop sql-map base path-elem prop-alias)
+        (inner-join [[:jsonb_array_elements prop-alias] alias]
+                    (if-let [filter (:filter path-elem)]
+                      [[at> alias [:lift filter]]]
+                      true)))))
 
 (defn extract-field [sql-map base path-elem alias]
-  (cond
-    (:meta path-elem) sql-map ;; TODO: implement meta fields access
-    (:coll path-elem) (extract-coll sql-map base path-elem alias)
-    :else             (extract-prop sql-map base path-elem alias)))
+  (let [already-included? (contains-alias? sql-map alias)
+        table-column? (nil? base)
+        collection-prop? (-> path-elem :coll boolean)]
+    (cond
+      already-included? (identity sql-map)
+      table-column?     (identity sql-map)
+      collection-prop?  (extract-coll sql-map base path-elem alias)
+      :else             (extract-prop sql-map base path-elem alias))))
 
-(defn extract-path [sql-map base path alias]
-  (let [[curr & more] path
-        curr-name (:prop curr)
-        suffix (when (:coll curr) "elem")
-        curr-alias (if (empty? more) alias (make-alias base curr-name suffix))]
-    (if (nil? curr)
-      sql-map
-      (-> (extract-field sql-map base curr curr-alias)
-          (extract-path curr-alias more alias)))))
+(defn extract-path [sql-map path alias]
+  (loop [acc sql-map
+         base nil
+         [curr & more] path
+         alias alias]
+    (let [curr-name (:field curr)
+          suffix (when (:coll curr) "elem")
+          curr-alias (if (empty? more) alias (make-alias base curr-name suffix))]
+      (if (nil? curr)
+        acc
+        (-> (extract-field acc base curr curr-alias)
+            (recur curr-alias more alias))))))

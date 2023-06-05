@@ -13,7 +13,7 @@
                  "WHERE CAST(name AS TEXT) LIKE ?")
             "name" "%john%"]
            (-> (fields/all-by-type :Person)
-               (fields/extract-path :content [{:prop "name"}] :name)
+               (fields/extract-path [{:field "content"} {:field "name"}] :name)
                (sut/contains-text :name "john")
                (hsql/format))))))
 
@@ -25,7 +25,7 @@
                  "WHERE CAST(name AS TEXT) = ?")
             "name" "\"John\""]
            (-> (fields/all-by-type :Person)
-               (fields/extract-path :content [{:prop "name"}] :name)
+               (fields/extract-path [{:field "content"} {:field "name"}] :name)
                (sut/match-exact :name "John")
                (hsql/format))))))
 
@@ -37,7 +37,7 @@
                  "WHERE CAST(age AS DECIMAL) = ?")
             "age" 35]
            (-> (fields/all-by-type :Person)
-               (fields/extract-path :content [{:prop "age"}] :age)
+               (fields/extract-path [{:field "content"} {:field "age"}] :age)
                (sut/number :age 35 :op/eq)
                (hsql/format)))))
   (testing "Can filter by number <= n"
@@ -47,7 +47,7 @@
                  "WHERE CAST(age AS DECIMAL) <= ?")
             "age" 2]
            (-> (fields/all-by-type :Person)
-               (fields/extract-path :content [{:prop "age"}] :age)
+               (fields/extract-path [{:field "content"} {:field "age"}] :age)
                (sut/number :age 2 :op/le)
                (hsql/format))))))
 

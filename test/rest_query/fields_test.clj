@@ -46,16 +46,7 @@
                  "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS code ON TRUE")
             "code"]
            (-> (sut/all-by-type :Person)
-               (sut/extract-prop :content {:prop "code"} :code)
-               (hsql/format)))))
-  (testing "Repeated props are not dupplicated"
-    (is (= [(str "SELECT res.* "
-                 "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS code ON TRUE")
-            "code"]
-           (-> (sut/all-by-type :Person)
-               (sut/extract-prop :content {:prop "code"} :code)
-               (sut/extract-prop :content {:prop "code"} :code)
+               (sut/extract-prop :content {:field "code"} :code)
                (hsql/format))))))
 
 (deftest extract-coll-test
@@ -66,7 +57,7 @@
                   "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS contact ON TRUE")
             "contacts"]
            (-> (sut/all-by-type :Person)
-               (sut/extract-coll :content {:prop "contacts" :coll true} :contact)
+               (sut/extract-coll :content {:field "contacts" :coll true} :contact)
                (hsql/format)))))
   (testing "Can expose jsonb matching prop collection elements for filtering"
     (is (= [(str "SELECT res.* "
@@ -77,7 +68,7 @@
             {:code "code"}]
            (-> (sut/all-by-type :Person)
                (sut/extract-coll :content
-                                 {:prop "contacts"
+                                 {:field "contacts"
                                   :coll true
                                   :filter {:code "code"}}
                                  :contact)
@@ -92,9 +83,9 @@
                  "INNER JOIN JSONB_EXTRACT_PATH(content_contacts_elem, ?) AS contact_value ON TRUE")
             "contacts" "value"]
            (-> (sut/all-by-type :Person)
-               (sut/extract-path :content
-                                 [{:prop "contacts" :coll true}
-                                  {:prop "value"}]
+               (sut/extract-path [{:field "content"}
+                                  {:field "contacts" :coll true}
+                                  {:field "value"}]
                                  :contact-value)
                (hsql/format)))))
   (testing "Can access deep jsonb property with shared path elem"
@@ -106,6 +97,19 @@
                  "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS lname ON TRUE")
             "name" "given" "family"]
            (-> (sut/all-by-type :Person)
-               (sut/extract-path :content [{:prop "name"} {:prop "given", :coll true}] :fname)
-               (sut/extract-path :content [{:prop "name"} {:prop "family"}] :lname)
+               (sut/extract-path [{:field "content"} {:field "name"} {:field "given", :coll true}] :fname)
+               (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
+               (hsql/format)))))
+  (testing "Repeated props are not dupplicated"
+    (is (= [(str "SELECT res.* "
+                 "FROM Person AS res "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS content_name_given ON TRUE "
+                 "INNER JOIN JSONB_ARRAY_ELEMENTS(content_name_given) AS fname ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS lname ON TRUE")
+            "name" "given" "family"]
+           (-> (sut/all-by-type :Person)
+               (sut/extract-path [{:field "content"} {:field "name"} {:field "given", :coll true}] :fname)
+               (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
+               (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
                (hsql/format))))))

@@ -52,28 +52,28 @@
    pag-offset   page-start
    pag-limit    page-size})
 
-(defn refine [sql-map base queryp params]
+(defn refine [sql-map queryp params]
   (let [path (-> queryp :path (or []))
         alias (-> queryp :name (fields/make-alias))
         filter (get filters-map (:code queryp))]
     (-> (identity sql-map)
-        (fields/extract-path base path alias)
+        (fields/extract-path path alias)
         (filter queryp params))))
 
-(defn make-sql-map [url-map base queryps]
+(defn make-sql-map [url-map queryps]
   (let [sql-map (-> url-map :from fields/all-by-type)]
     (->> (identity queryps)
          (filter #(or (contains? % :default)
                       (contains? (:params url-map) (name (:name %)))))
-         (reduce (fn [acc curr] (refine acc base curr (:params url-map))) sql-map)
+         (reduce (fn [acc curr] (refine acc curr (:params url-map))) sql-map)
          (identity))))
 
-(defn make-query [url-map base queryps]
-  (let [query (make-sql-map url-map base queryps)
+(defn make-query [url-map queryps]
+  (let [query (make-sql-map url-map queryps)
         total (filters/total query)]
     (hash-map :from (:from url-map)
               :page (hsql/format query {:numbered true})
               :total (hsql/format total {:numbered true}))))
 
-(defn url->query [url base queryps]
-  (-> url util/url->map (make-query base queryps)))
+(defn url->query [url queryps]
+  (-> url util/url->map (make-query queryps)))

@@ -5,10 +5,10 @@
    [honey.sql :as hsql]))
 
 (def queryps
-  [{:name :fname, :code :filters/text, :path [{:prop "name"} {:prop "given", :coll true}]}
-   {:name :lname, :code :filters/text, :path [{:prop "name"} {:prop "family"}]}
-   {:name :gender, :code :filters/keyword, :path [{:prop "gender"}]},
-   {:name :age, :code :filters/number, :path [{:prop "age"}]},
+  [{:name :fname, :code :filters/text, :path [{:field "resource"} {:field "name"} {:field "given", :coll true}]}
+   {:name :lname, :code :filters/text, :path [{:field "resource"} {:field "name"} {:field "family"}]}
+   {:name :gender, :code :filters/keyword, :path [{:field "resource"} {:field "gender"}]},
+   {:name :age, :code :filters/number, :path [{:field "resource"} {:field "age"}]},
    {:name :_offset :code :page/offset :default 0}
    {:name :_limit, :code :page/limit, :default 128}])
 
@@ -44,7 +44,6 @@
                                      "gender"  "M"
                                      "_offset" 0
                                      "_limit"  5}}
-                           :resource
                            queryps)))))
 
 (deftest url->query-test
@@ -77,15 +76,7 @@
                            "AND (CAST(gender AS TEXT) = ?) "
                            "AND (CAST(age AS DECIMAL) = ?)")
                     "name" "given" "family" "gender" "age" "%john%" "%doe%" "\"M\"" 35M]}
-           (sut/url->query (str "/Person"
-                                "?fname=john"
-                                "&lname=doe"
-                                "&gender=M"
-                                "&age=35"
-                                "&_offset=0"
-                                "&_limit=5")
-                           :resource
-                           queryps)))))
+           (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&_offset=0&_limit=5" queryps)))))
 
 (deftest make-sql-map-test
   (testing "Can build coplex query with multiple filters"
@@ -105,9 +96,7 @@
                    "AND (CAST(lname AS TEXT) LIKE ?) "
                    "AND (CAST(gender AS TEXT) = ?) LIMIT ? OFFSET ?")
               "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 20 5]
-             (-> (sut/make-sql-map {:from :Person, :params params}
-                                   :resource
-                                   queryps)
+             (-> (sut/make-sql-map {:from :Person, :params params} queryps)
                  (hsql/format))))
       (is (= [(str "SELECT res.* "
                    "FROM Person AS res "
@@ -120,7 +109,5 @@
                    "AND (CAST(lname AS TEXT) LIKE ?) "
                    "AND (CAST(gender AS TEXT) = ?) LIMIT ? OFFSET ?")
               "name" "given" "family" "gender" "%john%" "%doe%" "\"M\"" 128 0]
-             (-> (sut/make-sql-map {:from :Person, :params (select-keys params ["fname" "lname" "gender"])}
-                                   :resource
-                                   queryps)
+             (-> (sut/make-sql-map {:from :Person, :params (select-keys params ["fname" "lname" "gender"])} queryps)
                  (hsql/format)))))))
