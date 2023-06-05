@@ -139,3 +139,9 @@ Url query-string is the way to query over restful apis. Query-string params usua
 | order by ascending                        | `&_sort=created`          |
 |                                           | `&_sort=asc:created`      |
     
+
+## Ideas
+
+- `(util/gen-queryps map)`: generate queryps from sample data map in order to help user creating queryp metadata
+- `(rq/url->query url {:queryps queryps, :op-map op-map})`: ability to provide `operators` mapping, so user can use custom operators 
+- `{:field "...", :link "EntityType"}`: ability to filter by `EntityType` props after joining with first entity so a cross entities path can be constructed.
