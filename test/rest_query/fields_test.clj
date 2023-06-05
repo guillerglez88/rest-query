@@ -43,8 +43,7 @@
   (testing "Can expose jsonb prop for filtering"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS code ON TRUE")
-            "code"]
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'code') AS code ON TRUE")]
            (-> (sut/all-by-type :Person)
                (sut/extract-prop :content {:field "code"} :code)
                (hsql/format))))))
@@ -53,18 +52,16 @@
   (testing "Can expose jsonb prop collection elements for filtering"
     (is (= [(str "SELECT res.* "
                   "FROM Person AS res "
-                  "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_contacts ON TRUE "
-                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS contact ON TRUE")
-            "contacts"]
+                  "INNER JOIN JSONB_EXTRACT_PATH(content, 'contacts') AS content_contacts ON TRUE "
+                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS contact ON TRUE")]
            (-> (sut/all-by-type :Person)
                (sut/extract-coll :content {:field "contacts" :coll true} :contact)
                (hsql/format)))))
   (testing "Can expose jsonb matching prop collection elements for filtering"
     (is (= [(str "SELECT res.* "
                 "FROM Person AS res "
-                "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_contacts ON TRUE "
+                "INNER JOIN JSONB_EXTRACT_PATH(content, 'contacts') AS content_contacts ON TRUE "
                 "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS contact ON (contact @> ?)")
-            "contacts"
             {:code "code"}]
            (-> (sut/all-by-type :Person)
                (sut/extract-coll :content
@@ -78,10 +75,9 @@
   (testing "Can access deep jsonb property"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_contacts ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'contacts') AS content_contacts ON TRUE "
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS content_contacts_elem ON TRUE "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content_contacts_elem, ?) AS contact_value ON TRUE")
-            "contacts" "value"]
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_contacts_elem, 'value') AS contact_value ON TRUE")]
            (-> (sut/all-by-type :Person)
                (sut/extract-path [{:field "content"}
                                   {:field "contacts" :coll true}
@@ -91,11 +87,10 @@
   (testing "Can access deep jsonb property with shared path elem"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_name ON TRUE "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS content_name_given ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS content_name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'given') AS content_name_given ON TRUE "
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_name_given) AS fname ON TRUE "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS lname ON TRUE")
-            "name" "given" "family"]
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'family') AS lname ON TRUE")]
            (-> (sut/all-by-type :Person)
                (sut/extract-path [{:field "content"} {:field "name"} {:field "given", :coll true}] :fname)
                (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
@@ -103,11 +98,10 @@
   (testing "Repeated props are not dupplicated"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS content_name ON TRUE "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS content_name_given ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS content_name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'given') AS content_name_given ON TRUE "
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_name_given) AS fname ON TRUE "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, ?) AS lname ON TRUE")
-            "name" "given" "family"]
+                 "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'family') AS lname ON TRUE")]
            (-> (sut/all-by-type :Person)
                (sut/extract-path [{:field "content"} {:field "name"} {:field "given", :coll true}] :fname)
                (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)

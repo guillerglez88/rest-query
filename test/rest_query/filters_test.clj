@@ -9,9 +9,9 @@
   (testing "Can filter for occurrence of term on text field"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS name ON TRUE "
                  "WHERE CAST(name AS TEXT) LIKE ?")
-            "name" "%john%"]
+            "%john%"]
            (-> (fields/all-by-type :Person)
                (fields/extract-path [{:field "content"} {:field "name"}] :name)
                (sut/contains-text :name "john")
@@ -21,9 +21,9 @@
   (testing "Can filter for exact matching of term with text field"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS name ON TRUE "
                  "WHERE CAST(name AS TEXT) = ?")
-            "name" "\"John\""]
+            "\"John\""]
            (-> (fields/all-by-type :Person)
                (fields/extract-path [{:field "content"} {:field "name"}] :name)
                (sut/match-exact :name "John")
@@ -33,9 +33,9 @@
   (testing "Can filter by number equals"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS age ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'age') AS age ON TRUE "
                  "WHERE CAST(age AS DECIMAL) = ?")
-            "age" 35]
+            35]
            (-> (fields/all-by-type :Person)
                (fields/extract-path [{:field "content"} {:field "age"}] :age)
                (sut/number :age 35 :op/eq)
@@ -43,9 +43,9 @@
   (testing "Can filter by number <= n"
     (is (= [(str "SELECT res.* "
                  "FROM Person AS res "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, ?) AS age ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'age') AS age ON TRUE "
                  "WHERE CAST(age AS DECIMAL) <= ?")
-            "age" 2]
+            2]
            (-> (fields/all-by-type :Person)
                (fields/extract-path [{:field "content"} {:field "age"}] :age)
                (sut/number :age 2 :op/le)

@@ -26,7 +26,7 @@
 
 (defn extract-prop [sql-map base path-elem alias]
   (let [field (:field path-elem)]
-    (inner-join sql-map [[:jsonb_extract_path base field] alias] true)))
+    (inner-join sql-map [[:jsonb_extract_path base [:inline field]] alias] true)))
 
 (defn extract-coll [sql-map base path-elem alias]
   (let [field (:field path-elem)
