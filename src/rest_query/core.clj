@@ -68,7 +68,9 @@
         (filter queryp params))))
 
 (defn make-sql-map [url-map queryps]
-  (let [sql-map (-> url-map :from fields/all-by-type)]
+  (let [from (:from url-map)
+        alias (fields/make-alias from)
+        sql-map (fields/all-by-type from alias)]
     (->> (identity queryps)
          (filter #(or (contains? % :default)
                       (contains? (:params url-map) (name (:name %)))))

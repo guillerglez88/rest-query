@@ -14,15 +14,17 @@
   (->> parts
        (filter (complement nil?))
        (map name)
+       (map str/lower-case)
        (filter (complement str/blank?))
        (map #(str/replace % #"-" "_"))
        (str/join "_")
        (str/trimr)
        (keyword)))
 
-(defn all-by-type [type]
-    (-> (select :res.*)
-        (from [type :res])))
+(defn all-by-type [type alias]
+  (let [all-fields (-> alias name (str ".*") keyword)]
+    (-> (select all-fields)
+        (from [type alias]))))
 
 (defn extract-prop [sql-map base path-elem alias]
   (let [field (:field path-elem)]
