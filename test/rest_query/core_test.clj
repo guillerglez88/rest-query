@@ -5,13 +5,29 @@
    [honey.sql :as hsql]))
 
 (def queryps
-  [{:name :fname, :code :filters/text, :path [{:field "resource"} {:field "name"} {:field "given", :coll true}]}
-   {:name :lname, :code :filters/text, :path [{:field "resource"} {:field "name"} {:field "family"}]}
-   {:name :gender, :code :filters/keyword, :path [{:field "resource"} {:field "gender"}]},
-   {:name :age, :code :filters/number, :path [{:field "resource"} {:field "age"}]},
-   {:name :_sort :code :page/sort :default "created"}
-   {:name :_offset :code :page/offset :default 0}
-   {:name :_limit, :code :page/limit, :default 128}])
+  [{:code :filters/text
+    :path [{:field "resource"}
+           {:field "name"}
+           {:field "given", :coll true, :alias :fname}]}
+   {:code :filters/text
+    :path [{:field "resource"}
+           {:field "name"}
+           {:field "family", :alias :lname}]}
+   {:code :filters/keyword
+    :path [{:field "resource"}
+           {:field "gender", :alias :gender}]},
+   {:code :filters/number
+    :path [{:field "resource"}
+           {:field "age", :alias :age}]},
+   {:code :page/sort
+    :path [{:alias :_sort}]
+    :default "created"}
+   {:code :page/offset
+    :path [{:alias :_offset}]
+    :default 0}
+   {:code :page/limit
+    :path [{:alias :_limit}]
+    :default 128}])
 
 (deftest make-query-test
   (testing "Can converst url-map into a query map"

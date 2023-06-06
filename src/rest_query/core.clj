@@ -18,34 +18,34 @@
   sql-map)
 
 (defn contains-text [sql-map queryp params]
-  (let [field (:name queryp)
+  (let [field (-> queryp :path last :alias)
         [val _op] (util/get-param params field)]
     (filters/contains-text sql-map field val)))
 
 (defn match-exact [sql-map queryp params]
-  (let [field (:name queryp)
+  (let [field (-> queryp :path last :alias)
         [val _op] (util/get-param params field)]
     (filters/match-exact sql-map field val)))
 
 (defn number [sql-map queryp params]
-  (let [field (:name queryp)
+  (let [field (-> queryp :path last :alias)
         [val op] (util/get-param params field)]
     (filters/number sql-map field (bigdec val) op)))
 
 (defn page-start [sql-map queryp params]
-  (let [field (:name queryp)
+  (let [field (-> queryp :path last :alias)
         [val] (util/get-param params field {:default (:default queryp)
                                             :parser #(Integer/parseInt %)})]
     (filters/page-start sql-map val)))
 
 (defn page-size [sql-map queryp params]
-  (let [field (:name queryp)
+  (let [field (-> queryp :path last :alias)
         [val] (util/get-param params field {:default (:default queryp)
                                             :parser #(Integer/parseInt %)})]
     (filters/page-size sql-map val)))
 
 (defn page-sort [sql-map queryp params]
-  (let [field (:name queryp)
+  (let [field (-> queryp :path last :alias)
         [val op] (util/get-param params field {:default (:default queryp)})]
     (filters/page-sort sql-map val op)))
 
@@ -61,10 +61,9 @@
 
 (defn refine [sql-map queryp params]
   (let [path (-> queryp :path (or []))
-        alias (-> queryp :name (util/make-alias))
         filter (get filters-map (:code queryp))]
     (-> (identity sql-map)
-        (fields/extract-path path alias)
+        (fields/extract-path path)
         (filter queryp params))))
 
 (defn make-sql-map [url-map queryps]
@@ -73,7 +72,7 @@
         sql-map (fields/all-by-type from alias)]
     (->> (identity queryps)
          (filter #(or (contains? % :default)
-                      (contains? (:params url-map) (name (:name %)))))
+                      (contains? (:params url-map) (name (-> % :path last :alias)))))
          (reduce (fn [acc curr] (refine acc curr (:params url-map))) sql-map)
          (identity))))
 
