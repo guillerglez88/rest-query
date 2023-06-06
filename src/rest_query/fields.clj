@@ -1,25 +1,14 @@
 (ns rest-query.fields
   (:require
-   [clojure.string :as str]
    [honey.sql.helpers :refer [from inner-join select]]
-   [honey.sql.pg-ops :refer [at>]]))
+   [honey.sql.pg-ops :refer [at>]]
+   [rest-query.util :as util]))
 
 (defn contains-alias? [sql-map alias]
   (->> (:inner-join sql-map)
        (filter vector?)
        (some #(-> % second (= alias)))
        (boolean)))
-
-(defn make-alias [& parts]
-  (->> parts
-       (filter (complement nil?))
-       (map name)
-       (map str/lower-case)
-       (filter (complement str/blank?))
-       (map #(str/replace % #"-" "_"))
-       (str/join "_")
-       (str/trimr)
-       (keyword)))
 
 (defn all-by-type [type alias]
   (let [all-fields (-> alias name (str ".*") keyword)]
@@ -32,7 +21,7 @@
 
 (defn extract-coll [sql-map base path-elem alias]
   (let [field (:field path-elem)
-        prop-alias (make-alias base field)]
+        prop-alias (util/make-alias base field)]
     (-> (extract-prop sql-map base path-elem prop-alias)
         (inner-join [[:jsonb_array_elements prop-alias] alias]
                     (if-let [filter (:filter path-elem)]
@@ -54,9 +43,9 @@
          base nil
          [curr & more] path
          alias alias]
-    (let [curr-name (:field curr)
+    (let [field (:field curr)
           suffix (when (:coll curr) "elem")
-          curr-alias (if (empty? more) alias (make-alias base curr-name suffix))]
+          curr-alias (if (empty? more) alias (util/make-alias base field suffix))]
       (if (nil? curr)
         acc
         (-> (extract-field acc base curr curr-alias)

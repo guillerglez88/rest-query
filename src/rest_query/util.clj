@@ -30,3 +30,36 @@
          (.digest sha256)
          (map (partial format "%02x"))
          (apply str))))
+
+(defn make-alias [& parts]
+  (->> parts
+       (filter (complement nil?))
+       (map name)
+       (map str/lower-case)
+       (filter (complement str/blank?))
+       (map #(str/replace % #"[-.]" "_"))
+       (str/join "_")
+       (str/trimr)
+       (keyword)))
+
+(defn assign-alias [base path-elem]
+  (let [field (:field path-elem)
+        has-alias? (contains? path-elem :alias)
+        root? (or (nil? base) (:root path-elem))
+        suffix (when (:coll path-elem) "elem")]
+    (-> (cond
+          has-alias?  (:alias path-elem)
+          root?       (keyword field)
+          :else       (make-alias base field suffix))
+        ((partial assoc path-elem :alias)))))
+
+(defn assign-aliasses [path]
+  (loop [base nil
+         acc []
+         [curr & more] path]
+    (if (nil? curr)
+      (identity acc)
+      (let [path-elem (assign-alias base curr)]
+        (recur (:alias path-elem)
+               (conj acc path-elem)
+               more)))))

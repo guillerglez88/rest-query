@@ -61,7 +61,7 @@
 
 (defn refine [sql-map queryp params]
   (let [path (-> queryp :path (or []))
-        alias (-> queryp :name (fields/make-alias))
+        alias (-> queryp :name (util/make-alias))
         filter (get filters-map (:code queryp))]
     (-> (identity sql-map)
         (fields/extract-path path alias)
@@ -69,7 +69,7 @@
 
 (defn make-sql-map [url-map queryps]
   (let [from (:from url-map)
-        alias (fields/make-alias from)
+        alias (util/make-alias from)
         sql-map (fields/all-by-type from alias)]
     (->> (identity queryps)
          (filter #(or (contains? % :default)

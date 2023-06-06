@@ -1,7 +1,7 @@
 (ns rest-query.filters
   (:require
-   [honey.sql.helpers :refer [limit offset select where order-by]]
-   [rest-query.fields :as fields]))
+   [honey.sql.helpers :refer [limit offset order-by select where]]
+   [rest-query.util :as util]))
 
 (def op-eq    :op/eq)
 (def op-le    :op/le)
@@ -23,15 +23,15 @@
    op-desc  :desc})
 
 (defn contains-text [sql-map field value]
-  (let [alias (fields/make-alias field)]
+  (let [alias (util/make-alias field)]
     (where sql-map [:like [:cast alias :TEXT] (str "%" value "%")])))
 
 (defn match-exact [sql-map field value]
-  (let [alias (fields/make-alias field)]
+  (let [alias (util/make-alias field)]
     (where sql-map [:= [:cast alias :TEXT] (str "\"" value "\"")])))
 
 (defn number [sql-map field value op]
-  (let [alias (fields/make-alias field)
+  (let [alias (util/make-alias field)
         sql-op (get num-op-map (or op op-eq))]
     (where sql-map [sql-op [:cast alias :DECIMAL] value])))
 
@@ -42,7 +42,7 @@
   (limit sql-map count))
 
 (defn page-sort [sql-map field op]
-  (let [alias (fields/make-alias field)
+  (let [alias (util/make-alias field)
         sql-op (get sort-op-map (or op op-asc))]
     (order-by sql-map [alias (when sql-op sql-op)])))
 

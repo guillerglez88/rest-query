@@ -15,27 +15,6 @@
                (sut/extract-prop :content {:name "code"} :code)
                (sut/contains-alias? :foo))))))
 
-(deftest make-alias-test
-  (testing "Can make pg-sql compliant field name"
-    (is (= :path
-           (sut/make-alias "path")))
-    (is (= :path_to_field
-           (sut/make-alias "path-to-field")))
-    (is (= :path_to_field
-           (sut/make-alias "path-to-field  ")))
-    (is (= :resource_code
-           (sut/make-alias :resource "code")))
-    (is (= :resource_path_elem
-           (sut/make-alias :resource "path" "elem ")))
-    (is (= :resource_path_elem
-           (sut/make-alias :resource "path" :elem)))
-    (is (= :resource_path
-           (sut/make-alias :resource "path" nil)))
-    (is (= :person
-           (sut/make-alias :Person)))
-    (is (= :person_resource
-           (sut/make-alias :Person "resource")))))
-
 (deftest all-by-type-test
   (testing "Can make base sql map to filter results on"
     (is (= [(str "SELECT p.* "
@@ -47,43 +26,39 @@
   (testing "Can expose jsonb prop for filtering"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'code') AS code ON TRUE")]
+                 "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'code') AS code ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-prop :content {:field "code"} :code)
+               (sut/extract-prop :p.content {:field "code"} :code)
                (hsql/format))))))
 
 (deftest extract-coll-test
   (testing "Can expose jsonb prop collection elements for filtering"
     (is (= [(str "SELECT p.* "
                   "FROM Person AS p "
-                  "INNER JOIN JSONB_EXTRACT_PATH(content, 'contacts') AS content_contacts ON TRUE "
-                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS contact ON TRUE")]
+                  "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'contacts') AS p_content_contacts ON TRUE "
+                  "INNER JOIN JSONB_ARRAY_ELEMENTS(p_content_contacts) AS contact ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-coll :content {:field "contacts" :coll true} :contact)
+               (sut/extract-coll :p.content {:field "contacts" :coll true} :contact)
                (hsql/format)))))
   (testing "Can expose jsonb matching prop collection elements for filtering"
     (is (= [(str "SELECT p.* "
                 "FROM Person AS p "
-                "INNER JOIN JSONB_EXTRACT_PATH(content, 'contacts') AS content_contacts ON TRUE "
-                "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS contact ON (contact @> ?)")
+                "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'contacts') AS p_content_contacts ON TRUE "
+                "INNER JOIN JSONB_ARRAY_ELEMENTS(p_content_contacts) AS contact ON (contact @> ?)")
             {:code "code"}]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-coll :content
-                                 {:field "contacts"
-                                  :coll true
-                                  :filter {:code "code"}}
-                                 :contact)
+               (sut/extract-coll :p.content {:field "contacts", :coll true, :filter {:code "code"}} :contact)
                (hsql/format))))))
 
 (deftest extract-path-test
   (testing "Can access deep jsonb property"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'contacts') AS content_contacts ON TRUE "
-                 "INNER JOIN JSONB_ARRAY_ELEMENTS(content_contacts) AS content_contacts_elem ON TRUE "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content_contacts_elem, 'value') AS contact_value ON TRUE")]
+                 "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'contacts') AS p_content_contacts ON TRUE "
+                 "INNER JOIN JSONB_ARRAY_ELEMENTS(p_content_contacts) AS p_content_contacts_elem ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(p_content_contacts_elem, 'value') AS contact_value ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-path [{:field "content"}
+               (sut/extract-path [{:field "p.content"}
                                   {:field "contacts" :coll true}
                                   {:field "value"}]
                                  :contact-value)
@@ -91,23 +66,23 @@
   (testing "Can access deep jsonb property with shared path elem"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS content_name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'name') AS content_name ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'given') AS content_name_given ON TRUE "
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_name_given) AS fname ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'family') AS lname ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-path [{:field "content"} {:field "name"} {:field "given", :coll true}] :fname)
-               (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
+               (sut/extract-path [{:field "p.content"} {:field "name"} {:field "given", :coll true}] :fname)
+               (sut/extract-path [{:field "p.content"} {:field "name"} {:field "family"}] :lname)
                (hsql/format)))))
   (testing "Repeated props are not dupplicated"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS content_name ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'name') AS content_name ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'given') AS content_name_given ON TRUE "
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(content_name_given) AS fname ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'family') AS lname ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-path [{:field "content"} {:field "name"} {:field "given", :coll true}] :fname)
-               (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
-               (sut/extract-path [{:field "content"} {:field "name"} {:field "family"}] :lname)
+               (sut/extract-path [{:field "p.content"} {:field "name"} {:field "given", :coll true}] :fname)
+               (sut/extract-path [{:field "p.content"} {:field "name"} {:field "family"}] :lname)
+               (sut/extract-path [{:field "p.content"} {:field "name"} {:field "family"}] :lname)
                (hsql/format))))))
