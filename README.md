@@ -53,13 +53,29 @@ Url query-string is the way to query over restful apis. Query-string params usua
 
 ```clojure
 (def queryps
-  [{:name :fname, :code :filters/text, :path [{:field "resource"} {:field "name"} {:field "given", :coll true}]}
-   {:name :lname, :code :filters/text, :path [{:field "resource"} {:field "name"} {:field "family"}]}
-   {:name :gender, :code :filters/keyword, :path [{:field "resource"} {:field "gender"}]},
-   {:name :age, :code :filters/number, :path [{:field "resource"} {:field "age"}]},
-   {:name :_sort :code :page/sort :default "created"}
-   {:name :_offset :code :page/offset :default 0}
-   {:name :_limit, :code :page/limit, :default 128}])
+  [{:code :filters/text
+    :path [{:field "resource"}
+           {:field "name"}
+           {:field "given", :coll true, :alias :fname}]}
+   {:code :filters/text
+    :path [{:field "resource"}
+           {:field "name"}
+           {:field "family", :alias :lname}]}
+   {:code :filters/keyword
+    :path [{:field "resource"}
+           {:field "gender", :alias :gender}]},
+   {:code :filters/number
+    :path [{:field "resource"}
+           {:field "age", :alias :age}]},
+   {:code :page/sort
+    :path [{:alias :_sort}]
+    :default "created"}
+   {:code :page/offset
+    :path [{:alias :_offset}]
+    :default 0}
+   {:code :page/limit
+    :path [{:alias :_limit}]
+    :default 128}])
 ```
 
 **Postgres database table**
@@ -105,11 +121,12 @@ Url query-string is the way to query over restful apis. Query-string params usua
 
 ### Path
 
-| key      | required | default | example                                                   |
-|----------|----------|---------|-----------------------------------------------------------|
-| `prop`   | yes      |         | `{:prop "name"}`                                          |
-| `coll`   | no       | `false` | `{:prop "contacts", :coll true}`                          |
-| `filter` | no       | `{}`    | `{:prop "contacts", :coll true, :filter {:type "email"}}` |
+| key      | default | example                                                    |
+|----------|---------|------------------------------------------------------------|
+| `field`  |         | `{:field "name"}`                                          |
+| `coll`   | `false` | `{:field "contacts", :coll true}`                          |
+| `filter` |         | `{:field "contacts", :coll true, :filter {:type "email"}}` |
+| `alias`  |         | `{:field "firstName", :alias :fname}`                      |
 
 ### Filters
 
