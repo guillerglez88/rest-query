@@ -63,7 +63,9 @@
     (is (= :person_resource
            (sut/make-alias :Person "resource")))
     (is (= :p_content_contacts
-           (sut/make-alias :p.content "contacts")))))
+           (sut/make-alias :p.content "contacts")))
+    (is (= :org_name
+           (sut/make-alias :org-name)))))
 
 (deftest assign-alias-test
   (testing "Can assign alias to path elem"
