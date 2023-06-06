@@ -57,22 +57,28 @@ Url query-string is the way to query over restful apis. Query-string params usua
     :path [{:field "resource"}
            {:field "name"}
            {:field "given", :coll true, :alias :fname}]}
+
    {:code :filters/text
     :path [{:field "resource"}
            {:field "name"}
            {:field "family", :alias :lname}]}
+
    {:code :filters/keyword
     :path [{:field "resource"}
            {:field "gender", :alias :gender}]},
+
    {:code :filters/number
     :path [{:field "resource"}
            {:field "age", :alias :age}]},
+
    {:code :page/sort
     :path [{:alias :_sort}]
     :default "created"}
+
    {:code :page/offset
     :path [{:alias :_offset}]
     :default 0}
+
    {:code :page/limit
     :path [{:alias :_limit}]
     :default 128}])
