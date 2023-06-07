@@ -98,3 +98,11 @@
            (sut/assign-aliasses [{:field "p.resource"}
                                  {:field "name"}
                                  {:field "given", :coll true, :alias :first_name}])))))
+
+(deftest expand-elem-test
+  (testing "Can expand path element"
+    (is (= [{:field "name"}]
+           (sut/expand-elem {:field "name"})))
+    (is (= [{:field "org", :alias "org"}
+            {:field "org", :link "/Organization/id", :alias "org"}]
+           (sut/expand-elem {:field "org", :link "/Organization/id", :alias "org"})))))

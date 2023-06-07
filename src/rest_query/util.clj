@@ -53,6 +53,12 @@
           :else       (make-alias base field suffix))
         ((partial assoc path-elem :alias)))))
 
+(defn expand-elem [path-elem]
+  (let [link? (contains? path-elem :link)]
+    (if link?
+      (vector (dissoc path-elem :link) path-elem)
+      (vector path-elem))))
+
 (defn assign-aliasses [path]
   (loop [base nil
          acc []
