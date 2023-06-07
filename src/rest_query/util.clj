@@ -46,18 +46,23 @@
   (let [field (:field path-elem)
         has-alias? (contains? path-elem :alias)
         root? (or (nil? base) (:root path-elem))
-        suffix (when (:coll path-elem) "elem")]
+        suffix (cond
+                 (:link path-elem)  "entity"
+                 (:coll path-elem)  "elem"
+                 :else              nil)]
     (-> (cond
-          has-alias?  (-> path-elem :alias keyword)
+          has-alias?  (-> path-elem :alias (make-alias suffix))
           root?       (keyword field)
           :else       (make-alias base field suffix))
         ((partial assoc path-elem :alias)))))
 
 (defn expand-elem [path-elem]
-  (let [link? (contains? path-elem :link)]
-    (if link?
-      (vector (dissoc path-elem :link) path-elem)
-      (vector path-elem))))
+  (let [link? (contains? path-elem :link)
+        coll? (contains? path-elem :coll)]
+    (cond
+      link? (vector (dissoc path-elem :link) path-elem)
+      coll? (vector (dissoc path-elem :coll) path-elem)
+      :else (vector path-elem))))
 
 (defn prepare-path [path]
   (loop [base nil
@@ -65,8 +70,8 @@
          [curr & more] path]
     (if (nil? curr)
       (vec acc)
-      (let [path-elem (assign-alias base curr)
-            expanded (expand-elem path-elem)]
-        (recur (:alias path-elem)
-               (concat acc expanded)
+      (let [path-elems (->> (expand-elem curr)
+                            (map (partial assign-alias base)))]
+        (recur (-> path-elems first :alias)
+               (concat acc path-elems)
                more)))))

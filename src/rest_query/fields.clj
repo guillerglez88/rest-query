@@ -22,32 +22,30 @@
     (inner-join sql-map [[:jsonb_extract_path base [:inline field]] alias] true)))
 
 (defn extract-coll [sql-map base path-elem]
-  (let [field (:field path-elem)
-        alias (:alias path-elem)
-        prop-alias (util/make-alias base field)
-        intermediary (assoc path-elem :alias prop-alias)]
-    (-> (extract-prop sql-map base intermediary)
-        (inner-join [[:jsonb_array_elements prop-alias] alias]
-                    (if-let [filter (:filter path-elem)]
-                      [[at> alias [:lift filter]]]
-                      true)))))
+  (let [alias (:alias path-elem)]
+    (inner-join sql-map
+                [[:jsonb_array_elements base] alias]
+                (if-let [filter (:filter path-elem)]
+                  [[at> alias [:lift filter]]]
+                  true))))
 
 (defn link-entity [sql-map base path-elem]
   (let [alias (:alias path-elem)
-        ealias (util/make-alias alias "entity")
         [ename efield] (->> (str/split (:link path-elem) #"\/")
                             (filter (complement str/blank?)))
-        field-ref (-> ealias name (str "." efield) (keyword))]
-    (inner-join sql-map [(keyword ename) ealias] [:= [:concat [:inline (str "/" ename)] field-ref]
-                                                     [:cast alias :TEXT]])))
+        field-ref (-> alias name (str "." efield) (keyword))]
+    (inner-join sql-map [(keyword ename) alias] [:= [:concat [:inline (str "/" ename "/")] field-ref]
+                                                    [:cast base :TEXT]])))
 
 (defn extract-field [sql-map base path-elem]
   (let [already-included? (contains-alias? sql-map (:alias path-elem))
+        linked-entity? (contains? path-elem :link)
         table-column? (nil? base)
         collection-prop? (-> path-elem :coll boolean)]
     (cond
       already-included? (identity sql-map)
       table-column?     (identity sql-map)
+      linked-entity?    (link-entity sql-map base path-elem)
       collection-prop?  (extract-coll sql-map base path-elem)
       :else             (extract-prop sql-map base path-elem))))
 
@@ -56,6 +54,6 @@
          base nil
          [curr & more] (util/prepare-path path)]
     (if (nil? curr)
-      (identity acc)
+      (vector acc base)
       (-> (extract-field acc base curr)
           (recur (:alias curr) more)))))

@@ -14,6 +14,7 @@
             "%john%"]
            (-> (fields/all-by-type :Person :p)
                (fields/extract-path [{:field "content"} {:field "name", :alias :name}])
+               (first)
                (sut/contains-text :name "john")
                (hsql/format))))))
 
@@ -26,6 +27,7 @@
             "\"John\""]
            (-> (fields/all-by-type :Person :p)
                (fields/extract-path [{:field "content"} {:field "name", :alias :name}])
+               (first)
                (sut/match-exact :name "John")
                (hsql/format))))))
 
@@ -38,6 +40,7 @@
             35]
            (-> (fields/all-by-type :Person :p)
                (fields/extract-path [{:field "content"} {:field "age", :alias :age}])
+               (first)
                (sut/number :age 35 :op/eq)
                (hsql/format)))))
   (testing "Can filter by number <= n"
@@ -48,6 +51,7 @@
             2]
            (-> (fields/all-by-type :Person :p)
                (fields/extract-path [{:field "content"} {:field "age", :alias :age}])
+               (first)
                (sut/number :age 2 :op/le)
                (hsql/format))))))
 

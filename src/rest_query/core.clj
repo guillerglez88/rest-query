@@ -14,39 +14,31 @@
 (def pag-limit    :page/limit)
 (def pag-sort     :page/sort)
 
-(defn not-implemented [sql-map _queryp _params]
+(defn not-implemented [sql-map _field _params _alias _def-val]
   sql-map)
 
-(defn contains-text [sql-map queryp params]
-  (let [field (-> queryp :path last :alias)
-        [val _op] (util/get-param params field)]
-    (filters/contains-text sql-map field val)))
+(defn contains-text [sql-map field params alias _def-val]
+  (let [[val _op] (util/get-param params field)]
+    (filters/contains-text sql-map alias val)))
 
-(defn match-exact [sql-map queryp params]
-  (let [field (-> queryp :path last :alias)
-        [val _op] (util/get-param params field)]
-    (filters/match-exact sql-map field val)))
+(defn match-exact [sql-map field params alias _def-val]
+  (let [[val _op] (util/get-param params field)]
+    (filters/match-exact sql-map alias val)))
 
-(defn number [sql-map queryp params]
-  (let [field (-> queryp :path last :alias)
-        [val op] (util/get-param params field)]
-    (filters/number sql-map field (bigdec val) op)))
+(defn number [sql-map field params alias _def-val]
+  (let [[val op] (util/get-param params field)]
+    (filters/number sql-map alias (bigdec val) op)))
 
-(defn page-start [sql-map queryp params]
-  (let [field (-> queryp :path last :alias)
-        [val] (util/get-param params field {:default (:default queryp)
-                                            :parser #(Integer/parseInt %)})]
+(defn page-start [sql-map field params _alias def-val]
+  (let [[val] (util/get-param params field {:default def-val, :parser #(Integer/parseInt %)})]
     (filters/page-start sql-map val)))
 
-(defn page-size [sql-map queryp params]
-  (let [field (-> queryp :path last :alias)
-        [val] (util/get-param params field {:default (:default queryp)
-                                            :parser #(Integer/parseInt %)})]
+(defn page-size [sql-map field params _alias def-val]
+  (let [[val] (util/get-param params field {:default def-val, :parser #(Integer/parseInt %)})]
     (filters/page-size sql-map val)))
 
-(defn page-sort [sql-map queryp params]
-  (let [field (-> queryp :path last :alias)
-        [val op] (util/get-param params field {:default (:default queryp)})]
+(defn page-sort [sql-map field params _alias def-val]
+  (let [[val op] (util/get-param params field {:default def-val})]
     (filters/page-sort sql-map val op)))
 
 (def filters-map
@@ -61,10 +53,11 @@
 
 (defn refine [sql-map queryp params]
   (let [path (-> queryp :path (or []))
+        field (-> path last :alias)
+        def-val (:default queryp)
+        [sql-map alias] (fields/extract-path sql-map path)
         filter (get filters-map (:code queryp))]
-    (-> (identity sql-map)
-        (fields/extract-path path)
-        (filter queryp params))))
+    (filter sql-map field params alias def-val)))
 
 (defn make-sql-map [url-map queryps]
   (let [from (:from url-map)
