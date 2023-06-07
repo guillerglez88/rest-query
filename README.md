@@ -1,10 +1,13 @@
 # rest-query
 
-Clojure library for translating url into a database query. Powered by [honey.sql](https://github.com/seancorfield/honeysql). Inspired by [HL7](https://www.hl7.org/fhir/search.html).
+Clojure library for translating url into a database query. 
+
+- Powered by [honey.sql](https://github.com/seancorfield/honeysql)
+- Inspired by [HL7](https://www.hl7.org/fhir/search.html)
 
 ## Motivation
 
-Url query-string is the way to query over restful apis. Query-string params usually map to underlying data properties. Query-string params generally can be handled based on its type, for instance: text search, keyword exact matching, number range, date range, etc. Converting query params into sql-query is a repetitive task that can be abstracted and optimized by providing users with a way to generate, export, and replace queries. These are the aims of this library.
+Url query-string is the natural way of querying over REST. Query-string params usually map to underlying data properties and can be handled based on the properties types, for instance: string -> text search, number -> comparison, date -> interval comparison, etc. Converting query params into sql-query is a task that can be abstracted and optimized by providing users with a way to generate, export, and replace queries. These are the aims of this library.
 
 ## Usage
 
