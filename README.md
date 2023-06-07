@@ -96,19 +96,26 @@ Url query-string is the way to query over restful apis. Query-string params usua
     :default 128}])
 ```
 
-**Postgres database table**
+**Postgres database tables**
 
 ```
-| id | resource                     |
-|----|------------------------------|
-| 1  | {                            |
-|    |   "type": "Person",          |
-|    |   "name": {                  |
-|    |     "given": ["John", "M."], |
-|    |     "family": "Doe"},        |
-|    |   },                         |
-|    |   "gender": "M"              |
-|    | }                            |
+#Person
+| id | resource                            |
+|----|-------------------------------------|
+| 1  | {                                   |
+|    |   "type": "Person",                 |
+|    |   "name": {                         |
+|    |     "given": ["John", "M."],        |
+|    |     "family": "Doe"},               |
+|    |   },                                |
+|    |   "gender": "M",                    |
+|    |   "organization": "/Organization/1" |
+|    | }                                   |
+
+#Organization
+| id | name           |
+|----|----------------|
+| 1  | MyOrganization |
 ```
 
 ## Reference [wip]
