@@ -7,7 +7,7 @@ Clojure library for translating url into a database query.
 
 ## Motivation
 
-Url query-string is the natural way of querying over REST. Query-string params usually map to underlying data properties and can be handled based on the properties types, for instance: string -> text search, number -> comparison, date -> interval comparison, etc. Converting query params into sql-query is a task that can be abstracted and optimized by providing users with a way to generate, export, and replace queries. These are the aims of this library.
+Url query-string is the natural way of querying over REST. Query-string params generally map to underlying data properties and can be handled based on metadata describing those properties. This library converts url + metadata into sql-query.
 
 ## Usage
 
@@ -149,12 +149,13 @@ Url query-string is the natural way of querying over REST. Query-string params u
 
 ### Path
 
-| key      | default | example                                                    |
-|----------|---------|------------------------------------------------------------|
-| `field`  |         | `{:field "name"}`                                          |
-| `coll`   | `false` | `{:field "contacts", :coll true}`                          |
-| `filter` |         | `{:field "contacts", :coll true, :filter {:type "email"}}` |
-| `alias`  |         | `{:field "firstName", :alias :fname}`                      |
+| key      | default | example                                                        |
+|----------|---------|----------------------------------------------------------------|
+| `field`  |         | `{:field "name"}`                                              |
+| `coll`   | `false` | `{:field "contacts", :coll true}`                              |
+| `filter` |         | `{:field "contacts", :coll true, :filter {:type "email"}}`     |
+| `alias`  |         | `{:field "firstName", :alias :fname}`                          |
+| `link`   |         | `{:field "org", :link "/Organization/id", :alias :org_entity}` |
 
 ### Filters
 
