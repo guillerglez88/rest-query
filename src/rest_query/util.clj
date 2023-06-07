@@ -59,13 +59,14 @@
       (vector (dissoc path-elem :link) path-elem)
       (vector path-elem))))
 
-(defn assign-aliasses [path]
+(defn prepare-path [path]
   (loop [base nil
          acc []
          [curr & more] path]
     (if (nil? curr)
-      (identity acc)
-      (let [path-elem (assign-alias base curr)]
+      (vec acc)
+      (let [path-elem (assign-alias base curr)
+            expanded (expand-elem path-elem)]
         (recur (:alias path-elem)
-               (conj acc path-elem)
+               (concat acc expanded)
                more)))))

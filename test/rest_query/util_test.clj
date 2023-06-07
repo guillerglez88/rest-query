@@ -84,21 +84,6 @@
     (is (= {:field "created", :alias :creation-date}
            (sut/assign-alias nil {:field "created", :alias "creation-date"})))))
 
-(deftest assign-aliases-test
-  (testing "Can assign alias to each element in the path"
-    (is (= [{:field "p.resource", :alias :p.resource}
-            {:field "name", :alias :p_resource_name}
-            {:field "given", :coll true, :alias :p_resource_name_given_elem}]
-           (sut/assign-aliasses [{:field "p.resource"}
-                                 {:field "name"}
-                                 {:field "given", :coll true}])))
-    (is (= [{:field "p.resource", :alias :p.resource}
-            {:field "name", :alias :p_resource_name}
-            {:field "given", :coll true, :alias :first_name}]
-           (sut/assign-aliasses [{:field "p.resource"}
-                                 {:field "name"}
-                                 {:field "given", :coll true, :alias :first_name}])))))
-
 (deftest expand-elem-test
   (testing "Can expand path element"
     (is (= [{:field "name"}]
@@ -106,3 +91,23 @@
     (is (= [{:field "org", :alias "org"}
             {:field "org", :link "/Organization/id", :alias "org"}]
            (sut/expand-elem {:field "org", :link "/Organization/id", :alias "org"})))))
+
+(deftest prepare-path-test
+  (testing "Can pre-process path"
+    (is (= [{:field "p.resource", :alias :p.resource}
+            {:field "name", :alias :p_resource_name}
+            {:field "given", :coll true, :alias :p_resource_name_given_elem}]
+           (sut/prepare-path [{:field "p.resource"}
+                              {:field "name"}
+                              {:field "given", :coll true}])))
+    (is (= [{:field "p.resource", :alias :p.resource}
+            {:field "name", :alias :p_resource_name}
+            {:field "given", :coll true, :alias :first_name}]
+           (sut/prepare-path [{:field "p.resource"}
+                              {:field "name"}
+                              {:field "given", :coll true, :alias :first_name}])))
+    (is (= [{:field "p.resource", :alias :p.resource}
+            {:field "org", :alias :p_resource_org}
+            {:field "org", :link "/Organization/id", :alias :p_resource_org}]
+           (sut/prepare-path [{:field "p.resource"}
+                              {:field "org", :link "/Organization/id", :alias :p_resource_org}])))))

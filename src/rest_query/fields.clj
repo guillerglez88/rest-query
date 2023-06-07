@@ -54,7 +54,7 @@
 (defn extract-path [sql-map path]
   (loop [acc sql-map
          base nil
-         [curr & more] (util/assign-aliasses path)]
+         [curr & more] (util/prepare-path path)]
     (if (nil? curr)
       (identity acc)
       (-> (extract-field acc base curr)
