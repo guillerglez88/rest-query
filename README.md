@@ -113,9 +113,9 @@ Url query-string is the way to query over restful apis. Query-string params usua
 |    | }                                   |
 
 #Organization
-| id | name           |
-|----|----------------|
-| 1  | MyOrganization |
+| id | name             |
+|----|------------------|
+| 1  | "MyOrganization" |
 ```
 
 ## Reference [wip]
