@@ -48,7 +48,7 @@
         root? (or (nil? base) (:root path-elem))
         suffix (when (:coll path-elem) "elem")]
     (-> (cond
-          has-alias?  (:alias path-elem)
+          has-alias?  (-> path-elem :alias keyword)
           root?       (keyword field)
           :else       (make-alias base field suffix))
         ((partial assoc path-elem :alias)))))

@@ -77,9 +77,12 @@
            (sut/assign-alias :p.content {:field "name"})))
     (is (= {:field "contacts", :coll true, :alias :p_content_contacts_elem}
            (sut/assign-alias :p.content {:field "contacts", :coll true}))))
-  (testing "Can doesn't override alias"
+  (testing "Assign doesn't override alias"
     (is (= {:field "created", :alias :c}
-           (sut/assign-alias nil {:field "created", :alias :c})))))
+           (sut/assign-alias nil {:field "created", :alias :c}))))
+  (testing "String alias is converted into keyword"
+    (is (= {:field "created", :alias :creation-date}
+           (sut/assign-alias nil {:field "created", :alias "creation-date"})))))
 
 (deftest assign-aliases-test
   (testing "Can assign alias to each element in the path"

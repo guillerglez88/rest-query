@@ -8,36 +8,36 @@
   [{:code :filters/text
     :path [{:field "resource"}
            {:field "name"}
-           {:field "given", :coll true, :alias :fname}]}
+           {:field "given", :coll true, :alias "fname"}]}
 
    {:code :filters/text
     :path [{:field "resource"}
            {:field "name"}
-           {:field "family", :alias :lname}]}
+           {:field "family", :alias "lname"}]}
 
    {:code :filters/keyword
     :path [{:field "resource"}
-           {:field "gender", :alias :gender}]},
+           {:field "gender", :alias "gender"}]},
 
    {:code :filters/number
     :path [{:field "resource"}
-           {:field "age", :alias :age}]},
+           {:field "age", :alias "age"}]},
 
    {:code :filters/text
     :path [{:field "resource"}
-           {:field "organization", :link :Organization}
-           {:field "name", :alias :org-name}]}
+           {:field "organization", :link "/Organization/id"}
+           {:field "name", :alias "org-name"}]}
 
    {:code :page/sort
-    :path [{:alias :_sort}]
+    :path [{:alias "_sort"}]
     :default "created"}
 
    {:code :page/offset
-    :path [{:alias :_offset}]
+    :path [{:alias "_offset"}]
     :default 0}
 
    {:code :page/limit
-    :path [{:alias :_limit}]
+    :path [{:alias "_limit"}]
     :default 128}])
 
 (deftest make-query-test
