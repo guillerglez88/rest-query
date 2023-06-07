@@ -2,7 +2,8 @@
   (:require
    [honey.sql.helpers :refer [from inner-join select]]
    [honey.sql.pg-ops :refer [at>]]
-   [rest-query.util :as util]))
+   [rest-query.util :as util]
+   [clojure.string :as str]))
 
 (defn contains-alias? [sql-map alias]
   (->> (:inner-join sql-map)
@@ -30,6 +31,15 @@
                     (if-let [filter (:filter path-elem)]
                       [[at> alias [:lift filter]]]
                       true)))))
+
+(defn link-entity [sql-map base path-elem]
+  (let [alias (:alias path-elem)
+        ealias (util/make-alias alias "entity")
+        [ename efield] (->> (str/split (:link path-elem) #"\/")
+                            (filter (complement str/blank?)))
+        field-ref (-> ealias name (str "." efield) (keyword))]
+    (inner-join sql-map [(keyword ename) ealias] [:= [:concat [:inline (str "/" ename)] field-ref]
+                                                     [:cast alias :TEXT]])))
 
 (defn extract-field [sql-map base path-elem]
   (let [already-included? (contains-alias? sql-map (:alias path-elem))

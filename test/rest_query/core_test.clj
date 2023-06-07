@@ -25,7 +25,7 @@
 
    {:code :filters/text
     :path [{:field "resource"}
-           {:field "organization", :link "/Organization/id"}
+           {:field "organization", :link "/Organization/id", :alias "org"}
            {:field "name", :alias "org-name"}]}
 
    {:code :page/sort

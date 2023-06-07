@@ -50,6 +50,17 @@
                (sut/extract-coll :p.content {:field "contacts", :coll true, :filter {:code "code"} :alias :contact})
                (hsql/format))))))
 
+(deftest link-entity-test
+  (testing "Can include linked external entity for filtering"
+    (is (= [(str "SELECT p.* "
+                 "FROM Person AS p "
+                 "INNER JOIN JSONB_EXTRACT_PATH(p.content, 'org') AS p_content_org ON TRUE "
+                 "INNER JOIN Organization AS p_content_org_entity ON CONCAT('/Organization', p_content_org_entity.id) = CAST(p_content_org AS TEXT)")]
+           (-> (sut/all-by-type :Person :p)
+               (sut/extract-prop :p.content {:field "org", :alias :p_content_org})
+               (sut/link-entity :p.content {:field "org", :link "/Organization/id", :alias :p_content_org})
+               (hsql/format))))))
+
 (deftest extract-path-test
   (testing "Can access deep jsonb property"
     (is (= [(str "SELECT p.* "
