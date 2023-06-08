@@ -14,20 +14,29 @@
     (hash-map :from (keyword type)
               :params params)))
 
+(defn parse-param-key [key]
+  (let [[fst snd] (->> (str/split key #":" 2)
+                       (filter (complement str/blank?)))]
+    (if (nil? snd)
+      (vector fst)
+      (vector fst (keyword "op" snd)))))
+
+(defn process-params [params]
+  (->> (seq params)
+       (map (fn [[k v]]
+              (-> (parse-param-key k)
+                  (#(vector (first %) (vector (str v) (second %)))))))
+       (into {})))
+
 (defn get-param
   ([params queryp]
    (get-param params queryp nil))
   ([params queryp parser]
    (let [key (:name queryp)
-         default (:default queryp)
+         default (-> queryp :default str (vector nil))
          parse (or parser identity)
-         value (-> params (get (name key)) (or default) (str))
-         [fst snd] (->> (str/split value #":" 2)
-                        (filter (complement str/blank?))
-                        (filter #(not= "esc" %)))]
-     (if (nil? snd)
-       (vector (parse fst))
-       (vector (parse snd) (keyword "op" fst))))))
+         [val op] (-> params (get (name key)) (or default))]
+     (-> val parse (vector op)))))
 
 (defn calc-hash [payload]
   (let [sha256 (MessageDigest/getInstance "SHA-256")]

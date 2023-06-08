@@ -172,16 +172,14 @@ Url query-string is the natural way of querying over REST. Query-string params g
 
 | op                                        | example                   |
 |-------------------------------------------|---------------------------|
-| equals                                    | `&age=eq:35`              |
-| less than                                 | `&age=lt:2`               |
-| less than or equal                        | `&age=le:2`               |
-| greater than                              | `&age=gt:21`              |
-| greater than or equal                     | `&age=ge:21`              |
-| escape `:` to be interpreted as delimiter | `&time=esc:8:00-17:30`    |
-|                                           | `&desc=esc:foo%20bar:baz` |
-| order by descending                       | `&_sort=desc:created`     |
+| equals                                    | `&age:eq=35`              |
+| less than                                 | `&age:lt=2`               |
+| less than or equal                        | `&age:le=2`               |
+| greater than                              | `&age:gt=21`              |
+| greater than or equal                     | `&age:ge=21`              |
+| order by descending                       | `&_sort:desc=created`     |
 | order by ascending                        | `&_sort=created`          |
-|                                           | `&_sort=asc:created`      |
+|                                           | `&_sort:asc=created`      |
     
 
 ## Ideas

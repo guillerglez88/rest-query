@@ -123,7 +123,7 @@
                            "AND (CAST(org_name AS TEXT) LIKE ?) "
                           "ORDER BY created DESC")
                     "%john%" "%doe%" "\"M\"" 35M "%MyOrg%"]}
-           (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&_sort=desc:created&_offset=0&_limit=5" queryps)))))
+           (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&_sort:desc=created&_offset=0&_limit=5" queryps)))))
 
 (deftest make-sql-map-test
   (testing "Can build coplex query with multiple filters"

@@ -11,30 +11,52 @@
                      "gender" "M"
                      "_offset" "0"
                      "_limit" "5"}}
-           (sut/url->map "/Person?fname=john&lname=doe&gender=M&_offset=0&_limit=5")))))
+           (sut/url->map "/Person?fname=john&lname=doe&gender=M&_offset=0&_limit=5")))
+    (is (= {:from :Person
+            :params {"fname" "john"
+                     "lname" "doe"
+                     "age:ge" "21"
+                     "gender" "M"
+                     "_offset" "0"
+                     "_limit" "5"}}
+           (sut/url->map "/Person?fname=john&lname=doe&age:ge=21&gender=M&_offset=0&_limit=5")))))
+
+(deftest parse-param-key-test
+  (testing "Can parse param key to extract name and operation"
+    (is (= ["name"]
+           (sut/parse-param-key "name")))
+    (is (= ["age" :op/gt]
+           (sut/parse-param-key "age:gt")))))
+
+(deftest process-params-test
+  (testing "Can process params map to extract operations"
+    (is (= {"age" ["21" :op/gt]
+            "name" ["john" nil]}
+           (sut/process-params {"age:gt" "21"
+                                "name" "john"})))))
 
 (deftest get-param-test
   (testing "Can extract param value and operation"
-    (is (= ["35"]
-           (sut/get-param {"age" "35"} {:name :age})))
+    (is (= ["35" nil]
+           (sut/get-param {"age" ["35" nil]} {:name :age})))
     (is (= ["21" :op/gt]
-           (sut/get-param {"age" "gt:21"} {:name :age})))
+           (sut/get-param {"age" ["21" :op/gt]} {:name :age})))
     (is (= ["2" :op/lt]
-           (sut/get-param {"age" "lt:2"} {:name :age})))
+           (sut/get-param {"age" ["2" :op/lt]} {:name :age})))
     (is (= ["8:00-17:30" :op/bw]
-           (sut/get-param {"time" "bw:8:00-17:30"} {:name :time})))
-    (is (= ["8:00-17:30"]
-           (sut/get-param {"time" "esc:8:00-17:30"} {:name :time})))
-    (is (= [nil]
-           (sut/get-param {"foo" "bar"} {:name :baz})))
-    (is (= ["128"]
-           (sut/get-param {"_limit" 128} {:name :_limit})))
-    (is (= ["128"]
-           (sut/get-param {"foo" "bar"} {:name :_limit, :default 128})))
-    (is (= [35]
-           (sut/get-param {"age" "35"} {:name :age} #(Integer/parseInt %))))
-    (is (= [128]
-           (sut/get-param {"foo" "bar"} {:name :_limit, :default 128} #(Integer/parseInt %))))))
+           (sut/get-param {"time" ["8:00-17:30" :op/bw]} {:name :time})))
+    (is (= ["8:00-17:30" nil]
+           (sut/get-param {"time" ["8:00-17:30" nil]} {:name :time})))
+    (is (= ["" nil]
+           (sut/get-param {"foo" ["bar" nil]} {:name :baz})))
+    (is (= ["128" nil]
+           (sut/get-param {"_limit" ["128" nil]} {:name :_limit})))
+    (is (= ["128" nil]
+           (sut/get-param {"foo" ["bar" nil]} {:name :_limit, :default 128})))
+    (is (= [35 :op/gt]
+           (sut/get-param {"age" ["35" :op/gt]} {:name :age} #(Integer/parseInt %))))
+    (is (= [128 nil]
+           (sut/get-param {"foo" ["bar" nil]} {:name :_limit, :default 128} #(Integer/parseInt %))))))
 
 (deftest calc-hash-test
   (testing "Can calc digest from string"

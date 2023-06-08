@@ -40,11 +40,12 @@
 (defn make-sql-map [url-map queryps]
   (let [from (:from url-map)
         alias (util/make-alias from)
-        sql-map (fields/all-by-type from alias)]
+        sql-map (fields/all-by-type from alias)
+        params (-> url-map :params util/process-params)]
     (->> (identity queryps)
          (filter #(or (contains? % :default)
-                      (contains? (:params url-map) (name (:name %)))))
-         (reduce (fn [acc curr] (refine acc curr (:params url-map))) sql-map)
+                      (contains? params (name (:name %)))))
+         (reduce (fn [acc curr] (refine acc curr params)) sql-map)
          (identity))))
 
 (defn make-query [url-map queryps]
