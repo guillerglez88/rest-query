@@ -16,7 +16,7 @@ Url query-string is the natural way of querying over REST. Query-string params g
   (:require
    [rest-query.core :as rq])
 
-(sut/url->query url queryps)
+(rq/url->query url queryps)
 
 ;;  :url
 ;;
