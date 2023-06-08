@@ -16,8 +16,22 @@ Url query-string is the natural way of querying over REST. Query-string params g
   (:require
    [rest-query.core :as rq])
 
-(sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&_sort=desc:created&_offset=0&_limit=5" queryps)
+(sut/url->query url queryps)
 
+;;  :url
+;;
+;;  /Person
+;;    ?fname=john
+;;    &lname=doe
+;;    &gender=M
+;;    &age=35
+;;    &org-name=MyOrg
+;;    &_sort=desc:created
+;;    &_offset=0
+;;    &_limit=5
+;;
+;;  :sql
+;;
 ;;  SELECT person.* 
 ;;  FROM Person AS person 
 ;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE 
