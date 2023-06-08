@@ -44,10 +44,10 @@ Url query-string is the natural way of querying over REST. Query-string params g
 ;;  INNER JOIN Organization AS org_entity ON CONCAT('/Organization/', org_entity.id) = CAST(org AS TEXT) 
 ;;  INNER JOIN JSONB_EXTRACT_PATH(org_entity, 'name') AS org_name ON TRUE 
 ;;  WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) 
-;;   AND (CAST(resource_name_family AS TEXT) LIKE ?) 
-;;   AND (CAST(resource_gender AS TEXT) = ?) 
-;;   AND (CAST(resource_age AS DECIMAL) = ?) 
-;;   AND (CAST(org_name AS TEXT) LIKE ?) 
+;;    AND (CAST(resource_name_family AS TEXT) LIKE ?) 
+;;    AND (CAST(resource_gender AS TEXT) = ?) 
+;;    AND (CAST(resource_age AS DECIMAL) = ?) 
+;;    AND (CAST(org_name AS TEXT) LIKE ?) 
 ;;  ORDER BY created DESC 
 ;;  LIMIT ? OFFSET ?
 ```

@@ -14,50 +14,28 @@
 (def pag-limit    :page/limit)
 (def pag-sort     :page/sort)
 
-(defn not-implemented [sql-map _field _params _alias _def-val]
-  sql-map)
-
-(defn contains-text [sql-map field params alias _def-val]
-  (let [[val _op] (util/get-param params field)]
-    (filters/contains-text sql-map alias val)))
-
-(defn match-exact [sql-map field params alias _def-val]
-  (let [[val _op] (util/get-param params field)]
-    (filters/match-exact sql-map alias val)))
-
-(defn number [sql-map field params alias _def-val]
-  (let [[val op] (util/get-param params field)]
-    (filters/number sql-map alias (bigdec val) op)))
-
-(defn page-start [sql-map field params _alias def-val]
-  (let [[val] (util/get-param params field {:default def-val, :parser #(Integer/parseInt %)})]
-    (filters/page-start sql-map val)))
-
-(defn page-size [sql-map field params _alias def-val]
-  (let [[val] (util/get-param params field {:default def-val, :parser #(Integer/parseInt %)})]
-    (filters/page-size sql-map val)))
-
-(defn page-sort [sql-map field params _alias def-val]
-  (let [[val op] (util/get-param params field {:default def-val})]
-    (filters/page-sort sql-map val op)))
+(def parser-map
+  {flt-number   #(bigdec %)
+   pag-offset   #(Integer/parseInt %)
+   pag-limit    #(Integer/parseInt %)})
 
 (def filters-map
-  {flt-text     contains-text
-   flt-keyword  match-exact
-   flt-url      not-implemented
-   flt-number   number
-   flt-date     not-implemented
-   pag-offset   page-start
-   pag-limit    page-size
-   pag-sort     page-sort})
+  {flt-text     (fn [sql-map  alias  val _op] (filters/contains-text  sql-map alias val))
+   flt-keyword  (fn [sql-map  alias  val _op] (filters/match-exact    sql-map alias val))
+   flt-number   (fn [sql-map  alias  val  op] (filters/number         sql-map alias val op))
+   pag-offset   (fn [sql-map _alias  val _op] (filters/page-start     sql-map val))
+   pag-limit    (fn [sql-map _alias  val _op] (filters/page-size      sql-map val))
+   pag-sort     (fn [sql-map _alias  val  op] (filters/page-sort      sql-map val op))
+   flt-url      (fn [sql-map _alias _val _op] (identity               sql-map))
+   flt-date     (fn [sql-map _alias _val _op] (identity               sql-map))})
 
 (defn refine [sql-map queryp params]
   (let [path (-> queryp :path (or []))
-        name (:name queryp)
-        def-val (:default queryp)
+        code (-> queryp :code keyword)
         [sql-map alias] (fields/extract-path sql-map path)
-        filter (get filters-map (:code queryp))]
-    (filter sql-map name params alias def-val)))
+        [val op] (util/get-param params queryp (code parser-map))
+        filter (code filters-map)]
+    (filter sql-map alias val op)))
 
 (defn make-sql-map [url-map queryps]
   (let [from (:from url-map)

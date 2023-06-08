@@ -14,15 +14,20 @@
     (hash-map :from (keyword type)
               :params params)))
 
-(defn get-param [params key & {:keys [default parser]
-                               :or {default nil, parser identity}}]
-  (let [value (-> params (get (name key)) (or default) (str))
-        [fst snd] (->> (str/split value #":" 2)
-                       (filter (complement str/blank?))
-                       (filter #(not= "esc" %)))]
-    (if (nil? snd)
-      (vector (parser fst))
-      (vector (parser snd) (keyword "op" fst)))))
+(defn get-param
+  ([params queryp]
+   (get-param params queryp nil))
+  ([params queryp parser]
+   (let [key (:name queryp)
+         default (:default queryp)
+         parse (or parser identity)
+         value (-> params (get (name key)) (or default) (str))
+         [fst snd] (->> (str/split value #":" 2)
+                        (filter (complement str/blank?))
+                        (filter #(not= "esc" %)))]
+     (if (nil? snd)
+       (vector (parse fst))
+       (vector (parse snd) (keyword "op" fst))))))
 
 (defn calc-hash [payload]
   (let [sha256 (MessageDigest/getInstance "SHA-256")]
