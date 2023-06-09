@@ -28,7 +28,7 @@ Url query-string is the natural way of querying over REST. Query-string params g
 ;;    &org-name=MyOrg
 ;;    &sort:desc=created
 ;;    &page-start=0
-;;    &page-count=5
+;;    &page-size=5
 ;;
 ;;  :sql
 ;;
@@ -40,14 +40,14 @@ Url query-string is the natural way of querying over REST. Query-string params g
 ;;  INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE 
 ;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE 
 ;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS resource_age ON TRUE 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS org ON TRUE 
-;;  INNER JOIN Organization AS org_entity ON CONCAT('/Organization/', org_entity.id) = CAST(org AS TEXT) 
-;;  INNER JOIN JSONB_EXTRACT_PATH(org_entity, 'name') AS org_name ON TRUE 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS resource_organization ON TRUE 
+;;  INNER JOIN Organization AS resource_organization_entity ON CONCAT('/Organization/', resource_organization_entity.id) = CAST(resource_organization AS TEXT) 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource_organization_entity.resource, 'name') AS resource_organization_entity_resource_name ON TRUE 
 ;;  WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) 
-;;    AND (CAST(resource_name_family AS TEXT) LIKE ?) 
-;;    AND (CAST(resource_gender AS TEXT) = ?) 
-;;    AND (CAST(resource_age AS DECIMAL) = ?) 
-;;    AND (CAST(org_name AS TEXT) LIKE ?) 
+;;   AND (CAST(resource_name_family AS TEXT) LIKE ?) 
+;;   AND (CAST(resource_gender AS TEXT) = ?) 
+;;   AND (CAST(resource_age AS DECIMAL) = ?) 
+;;   AND (CAST(resource_organization_entity_resource_name AS TEXT) LIKE ?) 
 ;;  ORDER BY created DESC 
 ;;  LIMIT ? OFFSET ?
 ```
@@ -81,19 +81,20 @@ Url query-string is the natural way of querying over REST. Query-string params g
    {:code :filters/text
     :name "org-name"
     :path [{:field "resource"}
-           {:field "organization", :link "/Organization/id", :alias "org"}
+           {:field "organization", :link "/Organization/id"}
+           {:field "resource"}
            {:field "name"}]}
 
    {:code :page/sort
-    :name "_sort"
+    :name "sort"
     :default "created"}
 
    {:code :page/offset
-    :name "_offset"
+    :name "page-start"
     :default 0}
 
    {:code :page/limit
-    :name "_limit"
+    :name "page-size"
     :default 128}])
 ```
 
@@ -147,13 +148,13 @@ Url query-string is the natural way of querying over REST. Query-string params g
 
 ### Path
 
-| key      | default | example                                                        |
-|----------|---------|----------------------------------------------------------------|
-| `field`  |         | `{:field "name"}`                                              |
-| `coll`   | `false` | `{:field "contacts", :coll true}`                              |
-| `filter` |         | `{:field "contacts", :coll true, :filter {:type "email"}}`     |
-| `alias`  |         | `{:field "firstName", :alias :fname}`                          |
-| `link`   |         | `{:field "org", :link "/Organization/id", :alias :org_entity}` |
+| key      | default | example                                                    |
+|----------|---------|------------------------------------------------------------|
+| `field`  |         | `{:field "name"}`                                          |
+| `coll`   | `false` | `{:field "contacts", :coll true}`                          |
+| `filter` |         | `{:field "contacts", :coll true, :filter {:type "email"}}` |
+| `alias`  |         | `{:field "firstName", :alias :fname}`                      |
+| `link`   |         | `{:field "org", :link "/Organization/id"}`                 |
 
 ### Filters
 
