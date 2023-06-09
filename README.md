@@ -35,19 +35,19 @@ Url query-string is the natural way of querying over REST. Query-string params g
 ;;  SELECT person.* 
 ;;  FROM Person AS person 
 ;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE 
-;;  INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS resource_age ON TRUE 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS resource_organization ON TRUE 
-;;  INNER JOIN Organization AS resource_organization_entity ON CONCAT('/Organization/', resource_organization_entity.id) = CAST(resource_organization AS TEXT) 
-;;  INNER JOIN JSONB_EXTRACT_PATH(resource_organization_entity.resource, 'name') AS resource_organization_entity_resource_name ON TRUE 
-;;  WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) 
-;;   AND (CAST(resource_name_family AS TEXT) LIKE ?) 
-;;   AND (CAST(resource_gender AS TEXT) = ?) 
-;;   AND (CAST(resource_age AS DECIMAL) = ?) 
-;;   AND (CAST(resource_organization_entity_resource_name AS TEXT) LIKE ?) 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE 
+;;  INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS age ON TRUE 
+;;  INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS org ON TRUE 
+;;  INNER JOIN Organization AS org_entity ON CONCAT('/Organization/', org_entity.id) = CAST(org AS TEXT) 
+;;  INNER JOIN JSONB_EXTRACT_PATH(org_entity.resource, 'name') AS org_name ON TRUE 
+;;  WHERE (CAST(fname_elem AS TEXT) LIKE ?) 
+;;    AND (CAST(lname AS TEXT) LIKE ?) 
+;;    AND (CAST(gender AS TEXT) = ?) 
+;;    AND (CAST(age AS DECIMAL) = ?) 
+;;    AND (CAST(org_name AS TEXT) LIKE ?) 
 ;;  ORDER BY created DESC 
 ;;  LIMIT ? OFFSET ?
 ```
@@ -60,30 +60,30 @@ Url query-string is the natural way of querying over REST. Query-string params g
     :name "fname"
     :path [{:field "resource"}
            {:field "name"}
-           {:field "given", :coll true}]}
+           {:field "given", :coll true, :alias "fname"}]}
 
    {:code :filters/text
     :name "lname"
     :path [{:field "resource"}
            {:field "name"}
-           {:field "family"}]}
+           {:field "family", :alias "lname"}]}
 
    {:code :filters/keyword
     :name "gender"
     :path [{:field "resource"}
-           {:field "gender"}]}
+           {:field "gender", :alias "gender"}]}
 
    {:code :filters/number
     :name "age"
     :path [{:field "resource"}
-           {:field "age"}]}
+           {:field "age", :alias "age"}]}
 
    {:code :filters/text
     :name "org-name"
     :path [{:field "resource"}
-           {:field "organization", :link "/Organization/id"}
+           {:field "organization", :link "/Organization/id", :alias "org"}
            {:field "resource"}
-           {:field "name"}]}
+           {:field "name", :alias "org-name"}]}
 
    {:code :page/sort
     :name "sort"

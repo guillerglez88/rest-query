@@ -9,30 +9,30 @@
     :name "fname"
     :path [{:field "resource"}
            {:field "name"}
-           {:field "given", :coll true}]}
+           {:field "given", :coll true, :alias "fname"}]}
 
    {:code :filters/text
     :name "lname"
     :path [{:field "resource"}
            {:field "name"}
-           {:field "family"}]}
+           {:field "family", :alias "lname"}]}
 
    {:code :filters/keyword
     :name "gender"
     :path [{:field "resource"}
-           {:field "gender"}]}
+           {:field "gender", :alias "gender"}]}
 
    {:code :filters/number
     :name "age"
     :path [{:field "resource"}
-           {:field "age"}]}
+           {:field "age", :alias "age"}]}
 
    {:code :filters/text
     :name "org-name"
     :path [{:field "resource"}
-           {:field "organization", :link "/Organization/id"}
+           {:field "organization", :link "/Organization/id", :alias "org"}
            {:field "resource"}
-           {:field "name"}]}
+           {:field "name", :alias "org-name"}]}
 
    {:code :page/sort
     :name "sort"
@@ -49,30 +49,30 @@
 (deftest make-query-test
   (testing "Can converst url-map into a query map"
     (is (= {:from :Person
-            :hash "240fbc32ffe828a96da083434e2b812a847c7972267535300d926789514cded4"
+            :hash "c6736582d38fd8268ac7b4e894d65d74f1ab758a810c73b79bcd54de5de773a6"
             :page [(str "SELECT person.* "
                         "FROM Person AS person "
                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE "
-                        "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE "
-                        "WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) "
-                          "AND (CAST(resource_name_family AS TEXT) LIKE ?) "
-                          "AND (CAST(resource_gender AS TEXT) = ?) "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE "
+                        "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
+                        "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
+                          "AND (CAST(lname AS TEXT) LIKE ?) "
+                          "AND (CAST(gender AS TEXT) = ?) "
                         "ORDER BY created ASC "
                         "LIMIT ? OFFSET ?")
                    "%john%" "%doe%" "\"M\"" 5 0]
             :total [(str "SELECT COUNT(*) AS count "
                          "FROM Person AS person "
                          "INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE "
-                         "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE "
-                         "WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) "
-                           "AND (CAST(resource_name_family AS TEXT) LIKE ?) "
-                           "AND (CAST(resource_gender AS TEXT) = ?) "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE "
+                         "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
+                         "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
+                           "AND (CAST(lname AS TEXT) LIKE ?) "
+                           "AND (CAST(gender AS TEXT) = ?) "
                          "ORDER BY created ASC")
                     "%john%" "%doe%" "\"M\""]}
            (sut/make-query {:from :Person
@@ -86,42 +86,42 @@
 (deftest url->query-test
   (testing "Can converst url into a query map"
     (is (= {:from :Person
-            :hash "0fbe0b80f2e3c87439babf56561dbf231f2a1f6b56f92a37b71d484e8b4539fa"
+            :hash "6879c20ddf8a6e87921efd122d72e2ad66e6b24085ef2252d49e4c8186f91081"
             :page [(str "SELECT person.* "
                         "FROM Person AS person "
                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE "
-                        "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS resource_age ON TRUE "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS resource_organization ON TRUE "
-                        "INNER JOIN Organization AS resource_organization_entity ON CONCAT('/Organization/', resource_organization_entity.id) = CAST(resource_organization AS TEXT) "
-                        "INNER JOIN JSONB_EXTRACT_PATH(resource_organization_entity.resource, 'name') AS resource_organization_entity_resource_name ON TRUE "
-                        "WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) "
-                          "AND (CAST(resource_name_family AS TEXT) LIKE ?) "
-                          "AND (CAST(resource_gender AS TEXT) = ?) "
-                          "AND (CAST(resource_age AS DECIMAL) = ?) "
-                          "AND (CAST(resource_organization_entity_resource_name AS TEXT) LIKE ?) "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE "
+                        "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS age ON TRUE "
+                        "INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS org ON TRUE "
+                        "INNER JOIN Organization AS org_entity ON CONCAT('/Organization/', org_entity.id) = CAST(org AS TEXT) "
+                        "INNER JOIN JSONB_EXTRACT_PATH(org_entity.resource, 'name') AS org_name ON TRUE "
+                        "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
+                          "AND (CAST(lname AS TEXT) LIKE ?) "
+                          "AND (CAST(gender AS TEXT) = ?) "
+                          "AND (CAST(age AS DECIMAL) = ?) "
+                          "AND (CAST(org_name AS TEXT) LIKE ?) "
                         "ORDER BY created DESC "
                         "LIMIT ? OFFSET ?")
                    "%john%" "%doe%" "\"M\"" 35M "%MyOrg%" 5 0]
             :total [(str "SELECT COUNT(*) AS count "
                          "FROM Person AS person "
                          "INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE "
-                         "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS resource_age ON TRUE "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS resource_organization ON TRUE "
-                         "INNER JOIN Organization AS resource_organization_entity ON CONCAT('/Organization/', resource_organization_entity.id) = CAST(resource_organization AS TEXT) "
-                         "INNER JOIN JSONB_EXTRACT_PATH(resource_organization_entity.resource, 'name') AS resource_organization_entity_resource_name ON TRUE "
-                         "WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) "
-                           "AND (CAST(resource_name_family AS TEXT) LIKE ?) "
-                           "AND (CAST(resource_gender AS TEXT) = ?) "
-                           "AND (CAST(resource_age AS DECIMAL) = ?) "
-                           "AND (CAST(resource_organization_entity_resource_name AS TEXT) LIKE ?) "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE "
+                         "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'age') AS age ON TRUE "
+                         "INNER JOIN JSONB_EXTRACT_PATH(resource, 'organization') AS org ON TRUE "
+                         "INNER JOIN Organization AS org_entity ON CONCAT('/Organization/', org_entity.id) = CAST(org AS TEXT) "
+                         "INNER JOIN JSONB_EXTRACT_PATH(org_entity.resource, 'name') AS org_name ON TRUE "
+                         "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
+                           "AND (CAST(lname AS TEXT) LIKE ?) "
+                           "AND (CAST(gender AS TEXT) = ?) "
+                           "AND (CAST(age AS DECIMAL) = ?) "
+                           "AND (CAST(org_name AS TEXT) LIKE ?) "
                          "ORDER BY created DESC")
                     "%john%" "%doe%" "\"M\"" 35M "%MyOrg%"]}
            (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&sort:desc=created&page-start=0&page-size=5" queryps)))))
@@ -136,13 +136,13 @@
       (is (= [(str "SELECT person.* "
                    "FROM Person AS person "
                    "INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE "
-                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE "
-                   "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE "
-                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE "
-                   "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE "
-                   "WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) "
-                     "AND (CAST(resource_name_family AS TEXT) LIKE ?) "
-                     "AND (CAST(resource_gender AS TEXT) = ?) "
+                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE "
+                   "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
+                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE "
+                   "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
+                   "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
+                     "AND (CAST(lname AS TEXT) LIKE ?) "
+                     "AND (CAST(gender AS TEXT) = ?) "
                    "ORDER BY created ASC "
                    "LIMIT ? OFFSET ?")
               "%john%" "%doe%" "\"M\"" 20 5]
@@ -151,13 +151,13 @@
       (is (= [(str "SELECT person.* "
                    "FROM Person AS person "
                    "INNER JOIN JSONB_EXTRACT_PATH(resource, 'name') AS resource_name ON TRUE "
-                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS resource_name_given ON TRUE "
-                   "INNER JOIN JSONB_ARRAY_ELEMENTS(resource_name_given) AS resource_name_given_elem ON TRUE "
-                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS resource_name_family ON TRUE "
-                   "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS resource_gender ON TRUE "
-                   "WHERE (CAST(resource_name_given_elem AS TEXT) LIKE ?) "
-                     "AND (CAST(resource_name_family AS TEXT) LIKE ?) "
-                     "AND (CAST(resource_gender AS TEXT) = ?) "
+                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'given') AS fname ON TRUE "
+                   "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
+                   "INNER JOIN JSONB_EXTRACT_PATH(resource_name, 'family') AS lname ON TRUE "
+                   "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
+                   "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
+                     "AND (CAST(lname AS TEXT) LIKE ?) "
+                     "AND (CAST(gender AS TEXT) = ?) "
                    "ORDER BY created ASC "
                    "LIMIT ? OFFSET ?")
               "%john%" "%doe%" "\"M\"" 128 0]
