@@ -120,9 +120,9 @@ Url query-string is the natural way of querying over REST. Query-string params g
 |----|------------------|
 | 1  | "MyOrganization" |
 
-## Reference [wip]
+```
 
-### Fns
+## Reference [wip]
 
 ``` clojure
 (rq/url->query url queryps)
@@ -146,7 +146,7 @@ Url query-string is the natural way of querying over REST. Query-string params g
 ;; for manipulation.
 ```
 
-### Path
+## Path
 
 The `path` is the route to the property inside the table, starting with the table column and continuing with each property in deep until the desired property is reached. Can filter resources based on referenced entities by specifying `:link "/<table>/<column>"` in the path component, the convention for references is: `/<type>/<id>`. Linked entities can be used only for narrowing results not for bringing additional data as part of the principal resource. By default, an alias is generated concatenating field names, a custom alias can be specified though.
 
@@ -158,7 +158,7 @@ The `path` is the route to the property inside the table, starting with the tabl
 | `alias`  |          |         | `{:field "firstName", :alias :fname}`                      |
 | `link`   |          |         | `{:field "org", :link "/Organization/id"}`                 |
 
-### Filters
+## Filters
 
 The query parameter should be marked with a `:code`, the value of this code instructs the library to cast, filter, order and limit results accordingly.
 
@@ -173,7 +173,7 @@ The query parameter should be marked with a `:code`, the value of this code inst
 | `:filters/url`     |                  |                                          | planned |
 | `:filters/date`    |                  |                                          | planned |
 
-### Operators
+## Operators
 
 Depending on the type of data being filtered, an operation may be desirable in order to adjust data manipulation behaviour. The operation syntax convention is: `<param>:<op>=<val>` where `<op>` is the operation `code`.
 
@@ -187,6 +187,7 @@ Depending on the type of data being filtered, an operation may be desirable in o
 | `desc` | order by descending   | `&sort:desc=created` |
 | `asc`  | order by ascending    | `&sort:asc=created`  |
     
+---
 
 ## Ideas
 
