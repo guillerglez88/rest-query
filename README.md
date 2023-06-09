@@ -111,6 +111,7 @@ Url query-string is the natural way of querying over REST. Query-string params g
 |    |     "family": "Doe"},               |
 |    |   },                                |
 |    |   "gender": "M",                    |
+|    |   "age": 35,                        |
 |    |   "organization": "/Organization/1" |
 |    | }                                   |
 
@@ -118,7 +119,6 @@ Url query-string is the natural way of querying over REST. Query-string params g
 | id | name             |
 |----|------------------|
 | 1  | "MyOrganization" |
-```
 
 ## Reference [wip]
 
@@ -148,39 +148,44 @@ Url query-string is the natural way of querying over REST. Query-string params g
 
 ### Path
 
-| key      | default | example                                                    |
-|----------|---------|------------------------------------------------------------|
-| `field`  |         | `{:field "name"}`                                          |
-| `coll`   | `false` | `{:field "contacts", :coll true}`                          |
-| `filter` |         | `{:field "contacts", :coll true, :filter {:type "email"}}` |
-| `alias`  |         | `{:field "firstName", :alias :fname}`                      |
-| `link`   |         | `{:field "org", :link "/Organization/id"}`                 |
+The `path` is the route to the property inside the table, starting with the table column and continuing with each property in deep until the desired property is reached. Can filter resources based on referenced entities by specifying `:link "/<table>/<column>"` in the path component, the convention for references is: `/<type>/<id>`. Linked entities can be used only for narrowing results not for bringing additional data as part of the principal resource. By default, an alias is generated concatenating field names, a custom alias can be specified though.
+
+| key      | required | default | example                                                    |
+|----------|----------|---------|------------------------------------------------------------|
+| `field`  | `yes`    |         | `{:field "name"}`                                          |
+| `coll`   |          | `false` | `{:field "contacts", :coll true}`                          |
+| `filter` |          |         | `{:field "contacts", :coll true, :filter {:type "email"}}` |
+| `alias`  |          |         | `{:field "firstName", :alias :fname}`                      |
+| `link`   |          |         | `{:field "org", :link "/Organization/id"}`                 |
 
 ### Filters
+
+The query parameter should be marked with a `:code`, the value of this code instructs the library to cast, filter, order and limit results accordingly.
 
 | code               | query-string     | translated to                            | status  |
 |--------------------|------------------|------------------------------------------|---------|
 | `:filters/text`    | `&name=john`     | `WHERE CAST(name AS TEXT) like '%john%'` | ready   |
 | `:filters/keyword` | `&gender=M`      | `WHERE CAST(gender AS TEXT) = 'M'`       | ready   |
-| `:filters/url`     |                  |                                          | planned |
+| `:page/sort`       | `&sort=created`  | `ORDER BY created`                       | ready   |
 | `:filters/number`  | `&age=35`        | `WHERE CAST(age AS DECIMAL) = 35`        | partial |
+| `:page/offset`     | `&page-start=0`  | `OFFSET 0`                               | ready   |
+| `:page/limit`      | `&page-size=128` | `LIMIT 128`                              | ready   |
+| `:filters/url`     |                  |                                          | planned |
 | `:filters/date`    |                  |                                          | planned |
-| `:page/sort`       | `&_sort=created` | `ORDER BY created`                       | ready   |
-| `:page/offset`     | `&_offset=0`     | `OFFSET 0`                               | ready   |
-| `:page/limit`      | `&_limit=128`    | `LIMIT 128`                              | ready   |
 
 ### Operators
 
-| op                                        | example                   |
-|-------------------------------------------|---------------------------|
-| equals                                    | `&age:eq=35`              |
-| less than                                 | `&age:lt=2`               |
-| less than or equal                        | `&age:le=2`               |
-| greater than                              | `&age:gt=21`              |
-| greater than or equal                     | `&age:ge=21`              |
-| order by descending                       | `&_sort:desc=created`     |
-| order by ascending                        | `&_sort=created`          |
-|                                           | `&_sort:asc=created`      |
+Depending on the type of data being filtered, an operation may be desirable in order to adjust data manipulation behaviour. The operation syntax convention is: `<param>:<op>=<val>` where `<op>` is the operation `code`.
+
+| code   | desc                  | example              |
+|--------|-----------------------|----------------------|
+| `eq`   | equals                | `&age:eq=35`         |
+| `lt`   | less than             | `&age:lt=2`          |
+| `le`   | less than or equal    | `&age:le=2`          |
+| `gt`   | greater than          | `&age:gt=21`         |
+| `ge`   | greater than or equal | `&age:ge=21`         |
+| `desc` | order by descending   | `&sort:desc=created` |
+| `asc`  | order by ascending    | `&sort:asc=created`  |
     
 
 ## Ideas
