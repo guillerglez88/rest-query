@@ -86,58 +86,67 @@
     (is (= :p_content_contacts
            (sut/make-alias :p.content "contacts")))
     (is (= :org_name
-           (sut/make-alias :org-name)))))
+           (sut/make-alias :org-name)))
+    (is (= :org_entity_resource_name
+           (sut/make-alias "org_entity_resource." "name")))))
 
 (deftest assign-alias-test
   (testing "Can assign alias to path elem"
-    (is (= {:field "created", :alias :created}
-           (sut/assign-alias nil {:field "created"})))
-    (is (= {:field "p.created", :alias :p.created}
-           (sut/assign-alias nil {:field "p.created"})))
-    (is (= {:field "name", :alias :p_content_name}
-           (sut/assign-alias :p.content {:field "name"})))
-    (is (= {:field "contacts", :coll true, :alias :p_content_contacts_elem}
-           (sut/assign-alias :p.content {:field "contacts", :coll true})))
-    (is (= {:field "contacts", :coll true, :alias :p_content_contacts_elem}
-           (sut/assign-alias :p.content {:field "contacts", :coll true, :alias :p_content_contacts})))
-    (is (= {:field "org", :link "/Organization/id", :alias :p_content_org_entity}
-           (sut/assign-alias :p.content {:field "org", :link "/Organization/id", :alias :p_content_org}))))
+    (is (= {:field "created", :alias :created, :root true}
+           (sut/assign-alias {:field "created", :root true} nil)))
+    (is (= {:field "name", :alias :content_name, :root false}
+           (sut/assign-alias {:field "name", :root false}
+                             {:field "content" :alias :content, :root true})))
+    (is (= {:field "contacts", :coll true, :alias :contacts_elem, :root false}
+           (sut/assign-alias {:field "contacts", :coll true, :alias :contacts, :root false}
+                             {:field "contacts", :alias :contacts, :root false})))
+    (is (= {:field "org", :link "/Organization/id", :alias :content_org_entity, :root false}
+           (sut/assign-alias {:field "org", :link "/Organization/id", :alias :content_org, :root false}
+                             {:field "org", :alias :content_org, :root false}))))
   (testing "Assign doesn't override alias"
     (is (= {:field "created", :alias :c}
-           (sut/assign-alias nil {:field "created", :alias :c}))))
+           (sut/assign-alias {:field "created", :alias :c} nil))))
   (testing "String alias is converted into keyword"
     (is (= {:field "created", :alias :creation_date}
-           (sut/assign-alias nil {:field "created", :alias "creation-date"})))))
+           (sut/assign-alias {:field "created", :alias "creation-date"} nil)))))
 
 (deftest expand-elem-test
   (testing "Can expand path element"
-    (is (= [{:field "name"}]
-           (sut/expand-elem {:field "name"})))
-    (is (= [{:field "contact"}
-            {:field "contact", :coll true}]
-           (sut/expand-elem {:field "contact", :coll true})))
-    (is (= [{:field "org", :alias "org"}
-            {:field "org", :link "/Organization/id", :alias "org"}]
-           (sut/expand-elem {:field "org", :link "/Organization/id", :alias "org"})))))
+    (is (= [{:field "content", :root true}]
+           (sut/expand-elem {:field "content"} nil)))
+    (is (= [{:field "name", :root false}]
+           (sut/expand-elem {:field "name"} {:field "content"})))
+    (is (= [{:field "contacts", :root false}
+            {:field "contacts", :coll true, :root false}]
+           (sut/expand-elem {:field "contacts", :coll true} {:field "content"})))
+    (is (= [{:field "org", :root false}
+            {:field "org", :link "/Organization/id", :root false}]
+           (sut/expand-elem {:field "org", :link "/Organization/id"} {:field "content"})))
+    (is (= [{:field "content", :root true}]
+           (sut/expand-elem {:field "content"} {:field "org", :link "/Organization/id"})))))
 
 (deftest prepare-path-test
   (testing "Can pre-process path"
-    (is (= [{:field "p.resource", :alias :p.resource}
-            {:field "name", :alias :p_resource_name}
-            {:field "given", :alias :p_resource_name_given}
-            {:field "given", :coll true, :alias :p_resource_name_given_elem}]
-           (sut/prepare-path [{:field "p.resource"}
+    (is (= [{:field "resource", :root true, :alias :resource}
+            {:field "name", :root false, :alias :resource_name}
+            {:field "given", :root false, :alias :resource_name_given}
+            {:field "given", :coll true, :root false, :alias :resource_name_given_elem}]
+           (sut/prepare-path [{:field "resource"}
                               {:field "name"}
                               {:field "given", :coll true}])))
-    (is (= [{:field "p.resource", :alias :p.resource}
-            {:field "name", :alias :p_resource_name}
-            {:field "given", :alias :first_name}
-            {:field "given", :coll true, :alias :first_name_elem}]
-           (sut/prepare-path [{:field "p.resource"}
+    (is (= [{:field "resource", :alias :resource, :root true}
+            {:field "name", :alias :resource_name, :root false}
+            {:field "given", :alias :first_name, :root false}
+            {:field "given", :coll true, :alias :first_name_elem, :root false}]
+           (sut/prepare-path [{:field "resource"}
                               {:field "name"}
                               {:field "given", :coll true, :alias :first_name}])))
-    (is (= [{:field "p.resource", :alias :p.resource}
-            {:field "org", :alias :p_resource_org}
-            {:field "org", :link "/Organization/id", :alias :p_resource_org_entity}]
-           (sut/prepare-path [{:field "p.resource"}
-                              {:field "org", :link "/Organization/id", :alias :p_resource_org}])))))
+    (is (= [{:field "resource", :alias :resource, :root true}
+            {:field "org", :alias :resource_org, :root false}
+            {:field "org", :link "/Organization/id", :alias :resource_org_entity, :root false}
+            {:field "resource", :alias :resource_org_entity.resource, :root true}
+            {:field "name", :alias :resource_org_entity_resource_name, :root false}]
+           (sut/prepare-path [{:field "resource"}
+                              {:field "org", :link "/Organization/id"}
+                              {:field "resource"}
+                              {:field "name"}])))))

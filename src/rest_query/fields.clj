@@ -40,12 +40,12 @@
 (defn extract-field [sql-map base path-elem]
   (let [already-included? (contains-alias? sql-map (:alias path-elem))
         linked-entity? (contains? path-elem :link)
-        table-column? (nil? base)
+        table-column? (:root path-elem)
         collection-prop? (-> path-elem :coll boolean)]
     (cond
       already-included? (identity sql-map)
-      table-column?     (identity sql-map)
       linked-entity?    (link-entity sql-map base path-elem)
+      table-column?     (identity sql-map)
       collection-prop?  (extract-coll sql-map base path-elem)
       :else             (extract-prop sql-map base path-elem))))
 

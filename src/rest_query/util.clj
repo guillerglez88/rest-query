@@ -52,40 +52,35 @@
        (map str/lower-case)
        (filter (complement str/blank?))
        (map #(str/replace % #"[-.]" "_"))
+       (map #(str/replace % #"_+$" ""))
        (str/join "_")
        (str/trimr)
        (keyword)))
 
-(defn assign-alias [base path-elem]
-  (let [field (:field path-elem)
-        has-alias? (contains? path-elem :alias)
-        root? (or (nil? base) (:root path-elem))
-        suffix (cond
-                 (:link path-elem)  "entity"
-                 (:coll path-elem)  "elem"
-                 :else              nil)]
+(defn assign-alias [path-elem parent]
+  (let [field (-> path-elem :field name)
+        base (if (nil? parent) "" (-> parent :alias name (str ".")))]
     (-> (cond
-          has-alias?  (-> path-elem :alias (make-alias suffix))
-          root?       (keyword field)
-          :else       (make-alias base field suffix))
+          (:coll path-elem)             (make-alias base "elem")
+          (contains? path-elem :link)   (make-alias base "entity")
+          (contains? path-elem :alias)  (-> path-elem :alias make-alias)
+          (:root path-elem)             (-> base (str field) keyword)
+          :else                         (make-alias base field))
         ((partial assoc path-elem :alias)))))
 
-(defn expand-elem [path-elem]
+(defn expand-elem [path-elem parent]
   (let [link? (contains? path-elem :link)
-        coll? (contains? path-elem :coll)]
+        coll? (contains? path-elem :coll)
+        root? (or (nil? parent)
+                  (contains? parent :link))
+        self (assoc path-elem :root root?)]
     (cond
-      link? (vector (dissoc path-elem :link) path-elem)
-      coll? (vector (dissoc path-elem :coll) path-elem)
-      :else (vector path-elem))))
+      link? (vector (dissoc self :link) self)
+      coll? (vector (dissoc self :coll) self)
+      :else (vector self))))
 
 (defn prepare-path [path]
-  (loop [base nil
-         acc []
-         [curr & more] path]
-    (if (nil? curr)
-      (vec acc)
-      (let [path-elems (->> (expand-elem curr)
-                            (map (partial assign-alias base)))]
-        (recur (-> path-elems first :alias)
-               (concat acc path-elems)
-               more)))))
+  (->> (seq path)
+       (reduce #(concat %1 (expand-elem %2 (last %1))) [])
+       (reduce #(conj %1 (assign-alias %2 (last %1))) [])
+       (vec)))

@@ -26,9 +26,9 @@ Url query-string is the natural way of querying over REST. Query-string params g
 ;;    &gender=M
 ;;    &age=35
 ;;    &org-name=MyOrg
-;;    &_sort:desc=created
-;;    &_offset=0
-;;    &_limit=5
+;;    &sort:desc=created
+;;    &page-start=0
+;;    &page-count=5
 ;;
 ;;  :sql
 ;;
