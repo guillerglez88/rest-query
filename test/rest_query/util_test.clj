@@ -29,6 +29,23 @@
                      "gender" "M,F"}}
            (sut/url->map "/Person?name=john&gender=M,F")))))
 
+(deftest queryp->values
+  (testing "Can map queryp into values vector"
+    (is (= [:op/_nil]
+           (sut/queryp->values {:code :filters/text})))
+    (is (= [:op/_nil "foo"]
+           (sut/queryp->values {:code :filters/text, :default "foo"})))
+    (is (= [:op/_nil 5]
+           (sut/queryp->values {:code :filters/number, :default 5})))
+    (is (= [:op/ge 5]
+           (sut/queryp->values {:code :filters/number, :default [:op/ge 5]})))
+    (is (= [:op/_nil 1 2 3]
+           (sut/queryp->values {:code :filters/number, :default [1 2 3]})))
+    (is (= [:op/le 2]
+           (sut/queryp->values {:code :filters/number, :default ["op/le" 2]})))
+    (is (= [:op/eq 1 2 3]
+           (sut/queryp->values {:code :filters/number, :default ["op/eq" 1 2 3]})))))
+
 (deftest parse-param-key-test
   (testing "Can parse param key to extract name and operation"
     (is (= ["name" :op/_nil]
@@ -60,26 +77,28 @@
 
 (deftest get-param-test
   (testing "Can extract param value and operation"
-    (is (= ["35" nil]
-           (sut/get-param {"age" ["35" nil]} {:name :age})))
-    (is (= ["21" :op/gt]
-           (sut/get-param {"age" ["21" :op/gt]} {:name :age})))
-    (is (= ["2" :op/lt]
-           (sut/get-param {"age" ["2" :op/lt]} {:name :age})))
-    (is (= ["8:00-17:30" :op/bw]
-           (sut/get-param {"time" ["8:00-17:30" :op/bw]} {:name :time})))
-    (is (= ["8:00-17:30" nil]
-           (sut/get-param {"time" ["8:00-17:30" nil]} {:name :time})))
-    (is (= ["" nil]
-           (sut/get-param {"foo" ["bar" nil]} {:name :baz})))
-    (is (= ["128" nil]
-           (sut/get-param {"_limit" ["128" nil]} {:name :_limit})))
-    (is (= ["128" nil]
-           (sut/get-param {"foo" ["bar" nil]} {:name :_limit, :default 128})))
-    (is (= [35 :op/gt]
-           (sut/get-param {"age" ["35" :op/gt]} {:name :age} #(Integer/parseInt %))))
-    (is (= [128 nil]
-           (sut/get-param {"foo" ["bar" nil]} {:name :_limit, :default 128} #(Integer/parseInt %))))))
+    (is (= [:op/_nil "35"]
+           (sut/get-param {"age" [:op/_nil "35"]} {:name :age})))
+    (is (= [:op/gt "21"]
+           (sut/get-param {"age" [:op/gt "21"]} {:name :age})))
+    (is (= [:op/lt "2"]
+           (sut/get-param {"age" [:op/lt "2"]} {:name :age})))
+    (is (= [:op/bw "8:00-17:30"]
+           (sut/get-param {"time" [:op/bw "8:00-17:30"]} {:name :time})))
+    (is (= [:op/_nil "8:00-17:30"]
+           (sut/get-param {"time" [:op/_nil "8:00-17:30"]} {:name :time})))
+    (is (= [:op/_nil]
+           (sut/get-param {"foo" [:op/_nil"bar"]} {:name :baz})))
+    (is (= [:op/_nil "128"]
+           (sut/get-param {"_limit" [:op/_nil "128"]} {:name :_limit})))
+    (is (= [:op/_nil "128"]
+           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default 128})))
+    (is (= [:op/ge "21"]
+           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default [:op/ge 21]})))
+    (is (= [:op/gt 35]
+           (sut/get-param {"age" [:op/gt "35"]} {:name :age} #(Integer/parseInt %))))
+    (is (= [:op/_nil 128]
+           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default 128} #(Integer/parseInt %))))))
 
 (deftest calc-hash-test
   (testing "Can calc digest from string"

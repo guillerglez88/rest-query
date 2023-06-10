@@ -14,6 +14,20 @@
     (hash-map :from (keyword type)
               :params params)))
 
+(defn queryp->values [queryp]
+  (let [default (:default queryp)
+        kw-op? #(and (vector? %)
+                     (keyword? (first %)))
+        str-op? #(and (vector? %)
+                      (string? (first %))
+                      (str/starts-with? (first %) "op/"))]
+    (cond
+      (nil? default)    (vector :op/_nil)
+      (kw-op? default)  (identity default)
+      (str-op? default) (let [[h & t] default] (concat [(keyword h)] t))
+      (vector? default) (concat [:op/_nil] default)
+      :else             (vector :op/_nil default))))
+
 (defn parse-param-key [key]
   (let [[fst snd] (->> (str/split key #":" 2)
                        (filter (complement str/blank?)))]
@@ -24,7 +38,8 @@
 (defn normalize-param-val [op val]
   (->> (if (vector? val) val (vector val))
        (map str)
-       (concat [op])))
+       (concat [op])
+       (vec)))
 
 (defn process-params [params]
   (->> (seq params)
@@ -39,10 +54,14 @@
    (get-param params queryp nil))
   ([params queryp parser]
    (let [key (:name queryp)
-         default (-> queryp :default str (vector nil))
+         default (queryp->values queryp)
          parse (or parser identity)
-         [val op] (-> params (get (name key)) (or default))]
-     (-> val parse (vector op)))))
+         [op & val] (-> params (get (name key)) (or default))]
+     (->> (identity val)
+          (map str)
+          (map parse)
+          (concat [op])
+          (vec)))))
 
 (defn calc-hash [payload]
   (let [sha256 (MessageDigest/getInstance "SHA-256")]
