@@ -18,14 +18,20 @@
   (let [[fst snd] (->> (str/split key #":" 2)
                        (filter (complement str/blank?)))]
     (if (nil? snd)
-      (vector fst)
+      (vector fst :op/_nil)
       (vector fst (keyword "op" snd)))))
+
+(defn normalize-param-val [op val]
+  (->> (if (vector? val) val (vector val))
+       (map str)
+       (concat [op])))
 
 (defn process-params [params]
   (->> (seq params)
        (map (fn [[k v]]
-              (-> (parse-param-key k)
-                  (#(vector (first %) (conj (if (vector? v) v (vector v)) (second %)))))))
+              (let [[name op] (parse-param-key k)
+                    val (normalize-param-val op v)]
+                (vector name val))))
        (into {})))
 
 (defn get-param

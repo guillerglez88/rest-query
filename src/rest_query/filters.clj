@@ -3,6 +3,7 @@
    [honey.sql.helpers :refer [limit offset order-by select where]]
    [rest-query.util :as util]))
 
+(def op-nil   :op/_nil)
 (def op-eq    :op/eq)
 (def op-le    :op/le)
 (def op-lt    :op/lt)

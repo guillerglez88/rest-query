@@ -31,19 +31,32 @@
 
 (deftest parse-param-key-test
   (testing "Can parse param key to extract name and operation"
-    (is (= ["name"]
+    (is (= ["name" :op/_nil]
            (sut/parse-param-key "name")))
     (is (= ["age" :op/gt]
            (sut/parse-param-key "age:gt")))))
 
+(deftest normalize-param-val-test
+  (testing "Can normalize param value to get a flat str vector with operation as head"
+    (is (= [:op/_nil "john"]
+           (sut/normalize-param-val :op/_nil "john")))
+    (is (= [:op/_nil "128"]
+           (sut/normalize-param-val :op/_nil 128)))
+    (is (= [:op/_nil "M" "F"]
+           (sut/normalize-param-val :op/_nil ["M" "F"])))
+    (is (= [:op/_nil "read,write"]
+           (sut/normalize-param-val :op/_nil ["read,write"])))))
+
 (deftest process-params-test
   (testing "Can process params map to extract operations"
-    (is (= {"age" ["21" :op/gt]
-            "name" ["john" nil]
-            "gender" ["F" "M" nil]}
+    (is (= {"age" [:op/gt "21"]
+            "name" [:op/_nil "john"]
+            "gender" [:op/_nil "F" "M"]
+            "version" [:op/_nil "5"]}
            (sut/process-params {"age:gt" "21"
                                 "name" "john"
-                                "gender" ["F" "M"]})))))
+                                "gender" ["F" "M"]
+                                "version" 5})))))
 
 (deftest get-param-test
   (testing "Can extract param value and operation"
