@@ -19,7 +19,15 @@
                      "gender" "M"
                      "_offset" "0"
                      "_limit" "5"}}
-           (sut/url->map "/Person?fname=john&lname=doe&age:ge=21&gender=M&_offset=0&_limit=5")))))
+           (sut/url->map "/Person?fname=john&lname=doe&age:ge=21&gender=M&_offset=0&_limit=5")))
+    (is (= {:from :Person
+            :params {"name" "john"
+                     "gender" ["M" "F"]}}
+           (sut/url->map "/Person?name=john&gender=M&gender=F")))
+    (is (= {:from :Person
+            :params {"name" "john"
+                     "gender" "M,F"}}
+           (sut/url->map "/Person?name=john&gender=M,F")))))
 
 (deftest parse-param-key-test
   (testing "Can parse param key to extract name and operation"
@@ -31,9 +39,11 @@
 (deftest process-params-test
   (testing "Can process params map to extract operations"
     (is (= {"age" ["21" :op/gt]
-            "name" ["john" nil]}
+            "name" ["john" nil]
+            "gender" ["F" "M" nil]}
            (sut/process-params {"age:gt" "21"
-                                "name" "john"})))))
+                                "name" "john"
+                                "gender" ["F" "M"]})))))
 
 (deftest get-param-test
   (testing "Can extract param value and operation"

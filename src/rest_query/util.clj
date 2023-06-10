@@ -25,7 +25,7 @@
   (->> (seq params)
        (map (fn [[k v]]
               (-> (parse-param-key k)
-                  (#(vector (first %) (vector (str v) (second %)))))))
+                  (#(vector (first %) (conj (if (vector? v) v (vector v)) (second %)))))))
        (into {})))
 
 (defn get-param
