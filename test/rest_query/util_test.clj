@@ -19,44 +19,86 @@
                      "gender" "M"
                      "_offset" "0"
                      "_limit" "5"}}
-           (sut/url->map "/Person?fname=john&lname=doe&age:ge=21&gender=M&_offset=0&_limit=5")))))
+           (sut/url->map "/Person?fname=john&lname=doe&age:ge=21&gender=M&_offset=0&_limit=5")))
+    (is (= {:from :Person
+            :params {"name" "john"
+                     "gender" ["M" "F"]}}
+           (sut/url->map "/Person?name=john&gender=M&gender=F")))
+    (is (= {:from :Person
+            :params {"name" "john"
+                     "gender" "M,F"}}
+           (sut/url->map "/Person?name=john&gender=M,F")))))
+
+(deftest queryp->values
+  (testing "Can map queryp into values vector"
+    (is (= [:op/_nil]
+           (sut/queryp->values {:code :filters/text})))
+    (is (= [:op/_nil "foo"]
+           (sut/queryp->values {:code :filters/text, :default "foo"})))
+    (is (= [:op/_nil 5]
+           (sut/queryp->values {:code :filters/number, :default 5})))
+    (is (= [:op/ge 5]
+           (sut/queryp->values {:code :filters/number, :default [:op/ge 5]})))
+    (is (= [:op/_nil 1 2 3]
+           (sut/queryp->values {:code :filters/number, :default [1 2 3]})))
+    (is (= [:op/le 2]
+           (sut/queryp->values {:code :filters/number, :default ["op/le" 2]})))
+    (is (= [:op/eq 1 2 3]
+           (sut/queryp->values {:code :filters/number, :default ["op/eq" 1 2 3]})))))
 
 (deftest parse-param-key-test
   (testing "Can parse param key to extract name and operation"
-    (is (= ["name"]
+    (is (= ["name" :op/_nil]
            (sut/parse-param-key "name")))
     (is (= ["age" :op/gt]
            (sut/parse-param-key "age:gt")))))
 
+(deftest normalize-param-val-test
+  (testing "Can normalize param value to get a flat str vector with operation as head"
+    (is (= [:op/_nil "john"]
+           (sut/normalize-param-val :op/_nil "john")))
+    (is (= [:op/_nil "128"]
+           (sut/normalize-param-val :op/_nil 128)))
+    (is (= [:op/_nil "M" "F"]
+           (sut/normalize-param-val :op/_nil ["M" "F"])))
+    (is (= [:op/_nil "read,write"]
+           (sut/normalize-param-val :op/_nil ["read,write"])))))
+
 (deftest process-params-test
   (testing "Can process params map to extract operations"
-    (is (= {"age" ["21" :op/gt]
-            "name" ["john" nil]}
+    (is (= {"age" [:op/gt "21"]
+            "name" [:op/_nil "john"]
+            "gender" [:op/_nil "F" "M"]
+            "version" [:op/_nil "5"]}
            (sut/process-params {"age:gt" "21"
-                                "name" "john"})))))
+                                "name" "john"
+                                "gender" ["F" "M"]
+                                "version" 5})))))
 
 (deftest get-param-test
   (testing "Can extract param value and operation"
-    (is (= ["35" nil]
-           (sut/get-param {"age" ["35" nil]} {:name :age})))
-    (is (= ["21" :op/gt]
-           (sut/get-param {"age" ["21" :op/gt]} {:name :age})))
-    (is (= ["2" :op/lt]
-           (sut/get-param {"age" ["2" :op/lt]} {:name :age})))
-    (is (= ["8:00-17:30" :op/bw]
-           (sut/get-param {"time" ["8:00-17:30" :op/bw]} {:name :time})))
-    (is (= ["8:00-17:30" nil]
-           (sut/get-param {"time" ["8:00-17:30" nil]} {:name :time})))
-    (is (= ["" nil]
-           (sut/get-param {"foo" ["bar" nil]} {:name :baz})))
-    (is (= ["128" nil]
-           (sut/get-param {"_limit" ["128" nil]} {:name :_limit})))
-    (is (= ["128" nil]
-           (sut/get-param {"foo" ["bar" nil]} {:name :_limit, :default 128})))
-    (is (= [35 :op/gt]
-           (sut/get-param {"age" ["35" :op/gt]} {:name :age} #(Integer/parseInt %))))
-    (is (= [128 nil]
-           (sut/get-param {"foo" ["bar" nil]} {:name :_limit, :default 128} #(Integer/parseInt %))))))
+    (is (= [:op/_nil "35"]
+           (sut/get-param {"age" [:op/_nil "35"]} {:name :age})))
+    (is (= [:op/gt "21"]
+           (sut/get-param {"age" [:op/gt "21"]} {:name :age})))
+    (is (= [:op/lt "2"]
+           (sut/get-param {"age" [:op/lt "2"]} {:name :age})))
+    (is (= [:op/bw "8:00-17:30"]
+           (sut/get-param {"time" [:op/bw "8:00-17:30"]} {:name :time})))
+    (is (= [:op/_nil "8:00-17:30"]
+           (sut/get-param {"time" [:op/_nil "8:00-17:30"]} {:name :time})))
+    (is (= [:op/_nil]
+           (sut/get-param {"foo" [:op/_nil"bar"]} {:name :baz})))
+    (is (= [:op/_nil "128"]
+           (sut/get-param {"_limit" [:op/_nil "128"]} {:name :_limit})))
+    (is (= [:op/_nil "128"]
+           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default 128})))
+    (is (= [:op/ge "21"]
+           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default [:op/ge 21]})))
+    (is (= [:op/gt 35]
+           (sut/get-param {"age" [:op/gt "35"]} {:name :age} #(Integer/parseInt %))))
+    (is (= [:op/_nil 128]
+           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default 128} #(Integer/parseInt %))))))
 
 (deftest calc-hash-test
   (testing "Can calc digest from string"

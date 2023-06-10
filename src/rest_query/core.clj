@@ -23,9 +23,9 @@
   {flt-text     (fn [sql-map  alias  val _op] (filters/contains-text  sql-map alias val))
    flt-keyword  (fn [sql-map  alias  val _op] (filters/match-exact    sql-map alias val))
    flt-number   (fn [sql-map  alias  val  op] (filters/number         sql-map alias val op))
-   pag-offset   (fn [sql-map _alias  val _op] (filters/page-start     sql-map val))
-   pag-limit    (fn [sql-map _alias  val _op] (filters/page-size      sql-map val))
-   pag-sort     (fn [sql-map _alias  val  op] (filters/page-sort      sql-map val op))
+   pag-offset   (fn [sql-map _alias  val _op] (filters/page-start     sql-map (first val)))
+   pag-limit    (fn [sql-map _alias  val _op] (filters/page-size      sql-map (first val)))
+   pag-sort     (fn [sql-map _alias  val  op] (filters/page-sort      sql-map (first val) op))
    flt-url      (fn [sql-map _alias _val _op] (identity               sql-map))
    flt-date     (fn [sql-map _alias _val _op] (identity               sql-map))})
 
@@ -33,9 +33,9 @@
   (let [path (-> queryp :path (or []))
         code (-> queryp :code keyword)
         [sql-map alias] (fields/extract-path sql-map path)
-        [val op] (util/get-param params queryp (code parser-map))
+        [op & values] (util/get-param params queryp (code parser-map))
         filter (code filters-map)]
-    (filter sql-map alias val op)))
+    (filter sql-map alias values op)))
 
 (defn make-sql-map [url-map queryps]
   (let [from (:from url-map)

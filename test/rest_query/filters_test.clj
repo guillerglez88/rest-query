@@ -10,25 +10,33 @@
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
                  "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS name ON TRUE "
-                 "WHERE CAST(name AS TEXT) LIKE ?")
-            "%john%"]
+                 "WHERE (CAST(name AS TEXT) LIKE ?) "
+                 "AND (CAST(desc AS TEXT) LIKE ?) "
+                 "AND (CAST(desc AS TEXT) LIKE ?)")
+            "%john%" "%lorem%" "%ipsum%"]
            (-> (fields/all-by-type :Person :p)
                (fields/extract-path [{:field "content"} {:field "name", :alias :name}])
                (first)
-               (sut/contains-text :name "john")
+               (sut/contains-text :name ["john"])
+               (sut/contains-text :desc ["lorem" "ipsum"])
                (hsql/format))))))
 
 (deftest match-exact-test
   (testing "Can filter for exact matching of term with text field"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
-                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'name') AS name ON TRUE "
-                 "WHERE CAST(name AS TEXT) = ?")
-            "\"John\""]
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'status') AS status ON TRUE "
+                 "INNER JOIN JSONB_EXTRACT_PATH(content, 'gender') AS gender ON TRUE "
+                 "WHERE (CAST(status AS TEXT) = ?) "
+                 "AND (CAST(gender AS TEXT) IN (?, ?))")
+            "\"active\"" "\"M\"" "\"F\""]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content"} {:field "name", :alias :name}])
+               (fields/extract-path [{:field "content", :alias :content} {:field "status", :alias :status}])
                (first)
-               (sut/match-exact :name "John")
+               (fields/extract-path [{:field "content", :alias :content} {:field "gender", :alias :gender}])
+               (first)
+               (sut/match-exact :status ["active"])
+               (sut/match-exact :gender ["M" "F"])
                (hsql/format))))))
 
 (deftest number-test
@@ -39,9 +47,9 @@
                  "WHERE CAST(age AS DECIMAL) = ?")
             35]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content"} {:field "age", :alias :age}])
+               (fields/extract-path [{:field "content", :alias :content} {:field "age", :alias :age}])
                (first)
-               (sut/number :age 35 :op/eq)
+               (sut/number :age [35] :op/eq)
                (hsql/format)))))
   (testing "Can filter by number <= n"
     (is (= [(str "SELECT p.* "
@@ -50,9 +58,9 @@
                  "WHERE CAST(age AS DECIMAL) <= ?")
             2]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content"} {:field "age", :alias :age}])
+               (fields/extract-path [{:field "content", :alias :content} {:field "age", :alias :age}])
                (first)
-               (sut/number :age 2 :op/le)
+               (sut/number :age [2] :op/le)
                (hsql/format))))))
 
 (deftest page-size-test
