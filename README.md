@@ -181,6 +181,17 @@ Depending on the type of data being filtered, an operation may be desirable in o
 | `ge`   | greater than or equal | `&age:ge=21`         |
 | `desc` | order by descending   | `&sort:desc=created` |
 | `asc`  | order by ascending    | `&sort:asc=created`  |
+
+## Queryp default
+
+The `:default` property can be used to specify value in case you wanted to include an additional queryp even if not present in the url. Default value can be either a raw value, a vector of value or a vector with an operation as head and additional items as value.
+
+| type             | example                                               |
+|------------------|-------------------------------------------------------|
+| raw value        | `{:code :page/limit, :default 128}`                   |
+| vector of values | `{:code :filters/keyword, :default ["read" "write"]}` |
+| vector with op   | `{:code :filters/number, :default [:op/eq 1 2 3]}`    |
+|                  | `{:code :filters/number, :default ["op/eq" 1 2 3]}`   |
     
 ---
 
