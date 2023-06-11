@@ -77,8 +77,7 @@
                          "INNER JOIN JSONB_EXTRACT_PATH(resource, 'gender') AS gender ON TRUE "
                          "WHERE (CAST(fname_elem AS TEXT) LIKE ?) "
                            "AND (CAST(lname AS TEXT) LIKE ?) "
-                           "AND (CAST(gender AS TEXT) = ?) "
-                         "ORDER BY created ASC")
+                           "AND (CAST(gender AS TEXT) = ?)")
                     "%john%" "%doe%" "\"M\""]}
            (sut/make-query {:from :Person
                             :params {"fname"   "john"
@@ -126,8 +125,7 @@
                            "AND (CAST(lname AS TEXT) LIKE ?) "
                            "AND (CAST(gender AS TEXT) = ?) "
                            "AND (CAST(age AS DECIMAL) = ?) "
-                           "AND (CAST(org_name AS TEXT) LIKE ?) "
-                         "ORDER BY created DESC")
+                           "AND (CAST(org_name AS TEXT) LIKE ?)")
                     "%john%" "%doe%" "\"M\"" 35M "%MyOrg%"]}
            (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&sort:desc=_created&page-start=0&page-size=5" queryps)))))
 

@@ -67,5 +67,5 @@
 
 (defn total [sql-map]
   (-> sql-map
-      (dissoc :select :offset :limit)
+      (dissoc :select :offset :limit :order-by)
       (select [[:count :*] :count])))
