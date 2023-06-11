@@ -1,8 +1,6 @@
 # rest-query
 
-Clojure library for translating `url` into a `pg-sql` query using [honey.sql](https://github.com/seancorfield/honeysql).
-
-This lib aims to encourage the usage of url query-string for implementing search on restful APIs. Query params are linked to underlying data via `queryp` metadata.
+Clojure library for translating `url` into a `pg-sql` query using [honey.sql](https://github.com/seancorfield/honeysql). Query your postgres database using url syntax or use it for http search on your resful api.
 
 ## Usage
 
