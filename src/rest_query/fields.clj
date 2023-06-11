@@ -52,8 +52,8 @@
 (defn extract-path [sql-map path]
   (loop [acc sql-map
          base nil
-         [curr & more] (util/prepare-path path)]
+         [curr & more] path]
     (if (nil? curr)
-      (vector acc base)
+      (identity acc)
       (-> (extract-field acc base curr)
           (recur (:alias curr) more)))))

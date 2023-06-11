@@ -34,9 +34,14 @@
            {:field "resource"}
            {:field "name", :alias "org-name"}]}
 
+   {:code :filters/date
+    :name "_created"
+    :path [{:field "created"}]
+    :default []}
+
    {:code :page/sort
     :name "sort"
-    :default "created"}
+    :default "_created"}
 
    {:code :page/offset
     :name "page-start"
@@ -124,7 +129,7 @@
                            "AND (CAST(org_name AS TEXT) LIKE ?) "
                          "ORDER BY created DESC")
                     "%john%" "%doe%" "\"M\"" 35M "%MyOrg%"]}
-           (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&sort:desc=created&page-start=0&page-size=5" queryps)))))
+           (sut/url->query "/Person?fname=john&lname=doe&gender=M&age=35&org-name=MyOrg&sort:desc=_created&page-start=0&page-size=5" queryps)))))
 
 (deftest make-sql-map-test
   (testing "Can build coplex query with multiple filters"

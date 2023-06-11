@@ -3,7 +3,8 @@
    [clojure.test :as t :refer [deftest is testing]]
    [honey.sql :as hsql]
    [rest-query.fields :as fields]
-   [rest-query.filters :as sut]))
+   [rest-query.filters :as sut]
+   [rest-query.util :as util]))
 
 (deftest contains-text-test
   (testing "Can filter for occurrence of term on text field"
@@ -15,8 +16,7 @@
                  "AND (CAST(desc AS TEXT) LIKE ?)")
             "%john%" "%lorem%" "%ipsum%"]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content"} {:field "name", :alias :name}])
-               (first)
+               (fields/extract-path (util/prepare-path [{:field "content"} {:field "name", :alias :name}]))
                (sut/contains-text :name ["john"])
                (sut/contains-text :desc ["lorem" "ipsum"])
                (hsql/format))))))
@@ -31,10 +31,8 @@
                  "AND (CAST(gender AS TEXT) IN (?, ?))")
             "\"active\"" "\"M\"" "\"F\""]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content", :alias :content} {:field "status", :alias :status}])
-               (first)
-               (fields/extract-path [{:field "content", :alias :content} {:field "gender", :alias :gender}])
-               (first)
+               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "status", :alias :status}]))
+               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "gender", :alias :gender}]))
                (sut/match-exact :status ["active"])
                (sut/match-exact :gender ["M" "F"])
                (hsql/format))))))
@@ -47,8 +45,7 @@
                  "WHERE CAST(age AS DECIMAL) = ?")
             35]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content", :alias :content} {:field "age", :alias :age}])
-               (first)
+               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "age", :alias :age}]))
                (sut/number :age [35] :op/eq)
                (hsql/format)))))
   (testing "Can filter by number <= n"
@@ -58,8 +55,7 @@
                  "WHERE CAST(age AS DECIMAL) <= ?")
             2]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path [{:field "content", :alias :content} {:field "age", :alias :age}])
-               (first)
+               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "age", :alias :age}]))
                (sut/number :age [2] :op/le)
                (hsql/format))))))
 
@@ -89,19 +85,19 @@
                  "FROM Resource AS r "
                  "ORDER BY created DESC")]
            (-> (fields/all-by-type :Resource :r)
-               (sut/page-sort "created" :op/desc)
+               (sut/page-sort ["created"] :op/desc {"created" :created})
                (hsql/format))))
     (is (= [(str "SELECT r.* "
                  "FROM Resource AS r "
                  "ORDER BY created ASC")]
            (-> (fields/all-by-type :Resource :r)
-               (sut/page-sort "created" :op/asc)
+               (sut/page-sort ["created"] :op/asc {"created" :created})
                (hsql/format))))
     (is (= [(str "SELECT r.* "
                  "FROM Resource AS r "
                  "ORDER BY created ASC")]
            (-> (fields/all-by-type :Resource :r)
-               (sut/page-sort "created" nil)
+               (sut/page-sort ["created"] nil {"created" :created})
                (hsql/format))))))
 
 (deftest paginate-test

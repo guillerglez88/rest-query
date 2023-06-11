@@ -54,10 +54,11 @@
 (defn page-size [sql-map count]
   (limit sql-map count))
 
-(defn page-sort [sql-map field op]
-  (let [alias (util/make-alias field)
-        sql-op (get sort-op-map (or op op-asc))]
-    (order-by sql-map [alias (when sql-op sql-op)])))
+(defn page-sort [sql-map values op renames]
+  (let [sql-op (get sort-op-map (or op op-asc))]
+    (->> (identity values)
+         (map (partial get renames))
+         (reduce #(order-by %1 [%2 (when sql-op sql-op)]) sql-map))))
 
 (defn page [sql-map start count]
   (-> (identity sql-map)
