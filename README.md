@@ -1,6 +1,6 @@
 # rest-query
 
-Clojure library for translating `url` into a `pg-sql` query using [honey.sql](https://github.com/seancorfield/honeysql). Query your postgres database using url syntax or use it for http search on your resful api.
+Clojure library for translating URL into a pg-sql query using [honey.sql](https://github.com/seancorfield/honeysql). Query your Postgres database using URL syntax or use it for HTTP search on your restful API.
 
 ## Usage
 
