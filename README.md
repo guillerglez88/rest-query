@@ -11,6 +11,8 @@ Clojure library for translating `url` into a `pg-sql` query using [honey.sql](ht
 
 (rq/url->query url queryps)
 
+;; note: including some info for conciseness
+;;
 ;;  :url
 ;;
 ;;  /Person
@@ -120,7 +122,19 @@ Clojure library for translating `url` into a `pg-sql` query using [honey.sql](ht
 ``` clojure
 (rq/url->query url queryps)
 
-;; Convert url string into a query map.
+;; Convert url string into a query map. The query map includes: 
+;; {:hash "..."
+;;  :page [...]
+;;  :total [...]}
+;;
+;; `:hash` is a checksum of the page query without the parameters 
+;; values so user can cache query for performance or mapping purpose.
+;;
+;; `:page` is a honey.sql query vector, for the query page 
+;; including `LIMIT` & `OFFSET`.
+;;
+;; `:total` is the same query as the `:page` with `SELECT COUNT(*)` 
+;; and without pagination filters like `LIMIT` and `OFFSET`.
 ```
 
 ``` clojure
