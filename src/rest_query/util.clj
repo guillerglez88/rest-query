@@ -109,3 +109,8 @@
        (reduce #(concat %1 (expand-elem %2 (last %1))) [])
        (reduce #(conj %1 (assign-alias %2 (last %1))) [])
        (vec)))
+
+(defn get-queryps-renames [queryps]
+  (->> (identity queryps)
+       (map #(vector (-> % :name name) (-> % :path last :alias)))
+       (into {})))

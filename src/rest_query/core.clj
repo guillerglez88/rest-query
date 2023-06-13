@@ -43,7 +43,7 @@
         alias (util/make-alias from)
         sql-map (fields/all-by-type from alias)
         expanded-queryps (map #(assoc % :path (util/prepare-path (:path %))) queryps)
-        renames (->> expanded-queryps (map #(vector (-> % :name name) (-> % :path last :alias))) (into {}))
+        renames (util/get-queryps-renames expanded-queryps)
         params (-> url-map :params util/process-params)]
     (->> (identity expanded-queryps)
          (filter #(or (contains? % :default)
