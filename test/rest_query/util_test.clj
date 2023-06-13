@@ -190,17 +190,3 @@
                              {:field "org", :link "/Organization/id"}
                              {:field "resource"}
                              {:field "name"}])))))
-
-(deftest get-queryp-renames
-  (testing "Can get params renames from queryp name to path alias"
-    (is (= {"org-name" :organization_entity_resource_name
-            "fname" :first_name}
-           (sut/get-queryps-renames [{:name "org-name"
-                                      :path [{:field "resource"}
-                                             {:field "org", :link "/Organization/id"}
-                                             {:field "resource"}
-                                             {:field "name", :alias :organization_entity_resource_name}]}
-                                     {:name "fname"
-                                      :path [{:field "resource"}
-                                             {:field "name"}
-                                             {:field "given", :coll true, :alias :first_name}]}])))))

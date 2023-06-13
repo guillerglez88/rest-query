@@ -33,28 +33,30 @@
     (-> (fields/extract-path sql-map path)
         (filter alias values op renames))))
 
-(defn make-sql-map [url-map queryps]
-  (let [from (:from url-map)
-        alias (util/make-alias from)
+(defn make-sql-map [from params queryps]
+  (let [alias (util/make-alias from)
         sql-map (fields/all-by-type from alias)
-        expanded (map #(assoc % :path (util/expand-path (:path %))) queryps)
-        renames (util/get-queryps-renames expanded)
-        params (-> url-map :params util/process-params)]
-    (->> (identity expanded)
+        queryps-exp (map util/expand-queryp queryps)
+        renames (->> queryps-exp (map #(vector (:name %) (:alias %))) (into {}))
+        params-exp (util/process-params params)]
+    (->> (identity queryps-exp)
          (filter #(or (contains? % :default)
-                      (contains? params (name (:name %)))))
-         (reduce (fn [acc curr] (refine acc curr params renames)) sql-map))))
+                      (contains? params-exp (:name %))))
+         (reduce (fn [acc curr] (refine acc curr params-exp renames)) sql-map))))
 
-(defn make-query [url-map queryps]
-  (let [query (make-sql-map url-map queryps)
+(defn make-query [from params queryps]
+  (let [query (make-sql-map from params queryps)
         total (filters/total query)
         fpage (hsql/format query {:numbered true})
         ftotal (hsql/format total {:numbered true})
         hash (util/calc-hash (first fpage))]
-    (hash-map :from (:from url-map)
+    (hash-map :from from
               :hash hash
               :page fpage
               :total ftotal)))
 
 (defn url->query [url queryps]
-  (-> url util/url->map (make-query queryps)))
+  (let [url-map (util/url->map url)
+        from (:from url-map)
+        params (:params url-map)]
+    (make-query from params queryps)))

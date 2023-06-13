@@ -79,12 +79,12 @@
                            "AND (CAST(lname AS TEXT) LIKE ?) "
                            "AND (CAST(gender AS TEXT) = ?)")
                     "%john%" "%doe%" "\"M\""]}
-           (sut/make-query {:from :Person
-                            :params {"fname"   "john"
-                                     "lname"   "doe"
-                                     "gender"  "M"
-                                     "page-start" 0
-                                     "page-size"  5}}
+           (sut/make-query :Person
+                           {"fname"   "john"
+                            "lname"   "doe"
+                            "gender"  "M"
+                            "page-start" 0
+                            "page-size"  5}
                            queryps)))))
 
 (deftest url->query-test
@@ -149,7 +149,7 @@
                    "ORDER BY created ASC "
                    "LIMIT ? OFFSET ?")
               "%john%" "%doe%" "\"M\"" 20 5]
-             (-> (sut/make-sql-map {:from :Person, :params params} queryps)
+             (-> (sut/make-sql-map :Person params queryps)
                  (hsql/format))))
       (is (= [(str "SELECT person.* "
                    "FROM Person AS person "
@@ -164,5 +164,5 @@
                    "ORDER BY created ASC "
                    "LIMIT ? OFFSET ?")
               "%john%" "%doe%" "\"M\"" 128 0]
-             (-> (sut/make-sql-map {:from :Person, :params (select-keys params ["fname" "lname" "gender"])} queryps)
+             (-> (sut/make-sql-map :Person (select-keys params ["fname" "lname" "gender"]) queryps)
                  (hsql/format)))))))
