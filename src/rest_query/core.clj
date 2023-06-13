@@ -49,8 +49,8 @@
 
 (defn make-sql-map [from params queryps]
   (let [alias (util/make-alias from)
-        xparams (-> queryps meta :expanded? (if queryps (expand-params params)))
-        xqueryps (-> params meta :expanded? (if params (expand-queryps queryps)))
+        xparams (-> params meta :expanded? (if params (expand-params params)))
+        xqueryps (-> queryps meta :expanded? (if queryps (expand-queryps queryps)))
         renames (->> xqueryps (map #(vector (:name %) (:alias %))) (into {}))
         sql-map (fields/all-by-type from alias)]
     (->> (identity xqueryps)
