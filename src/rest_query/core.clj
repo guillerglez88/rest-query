@@ -14,11 +14,6 @@
 (def pag-limit    :page/limit)
 (def pag-sort     :page/sort)
 
-(def parser-map
-  {flt-number   #(bigdec %)
-   pag-offset   #(Integer/parseInt %)
-   pag-limit    #(Integer/parseInt %)})
-
 (def filters-map
   {flt-text     (fn [sql-map  alias  val _op _renames] (filters/contains-text  sql-map alias val))
    flt-keyword  (fn [sql-map  alias  val _op _renames] (filters/match-exact    sql-map alias val))
@@ -33,7 +28,7 @@
   (let [path (-> queryp :path (or []))
         code (-> queryp :code keyword)
         alias (get renames (queryp :name))
-        [op & values] (util/get-param params queryp (code parser-map))
+        [op & values] (util/get-param params queryp)
         filter (code filters-map)]
     (-> (fields/extract-path sql-map path)
         (filter alias values op renames))))
@@ -42,10 +37,10 @@
   (let [from (:from url-map)
         alias (util/make-alias from)
         sql-map (fields/all-by-type from alias)
-        expanded-queryps (map #(assoc % :path (util/prepare-path (:path %))) queryps)
-        renames (util/get-queryps-renames expanded-queryps)
+        expanded (map #(assoc % :path (util/expand-path (:path %))) queryps)
+        renames (util/get-queryps-renames expanded)
         params (-> url-map :params util/process-params)]
-    (->> (identity expanded-queryps)
+    (->> (identity expanded)
          (filter #(or (contains? % :default)
                       (contains? params (name (:name %)))))
          (reduce (fn [acc curr] (refine acc curr params renames)) sql-map))))

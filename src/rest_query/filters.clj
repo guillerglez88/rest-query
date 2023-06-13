@@ -46,13 +46,14 @@
   (let [alias (util/make-alias field)
         sql-op (get num-op-map (or op op-eq))]
     (->> (or values [])
+         (map bigdec)
          (reduce #(where %1 [sql-op [:cast alias :DECIMAL] %2]) sql-map))))
 
 (defn page-start [sql-map start]
-  (offset sql-map start))
+  (offset sql-map (Integer/parseInt start)))
 
 (defn page-size [sql-map count]
-  (limit sql-map count))
+  (limit sql-map (Integer/parseInt count)))
 
 (defn page-sort [sql-map values op renames]
   (let [sql-op (get sort-op-map (or op op-asc))]

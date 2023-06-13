@@ -95,10 +95,8 @@
            (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default 128})))
     (is (= [:op/ge "21"]
            (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default [:op/ge 21]})))
-    (is (= [:op/gt 35]
-           (sut/get-param {"age" [:op/gt "35"]} {:name :age} #(Integer/parseInt %))))
-    (is (= [:op/_nil 128]
-           (sut/get-param {"foo" [:op/_nil "bar"]} {:name :_limit, :default 128} #(Integer/parseInt %))))))
+    (is (= [:op/gt "35"]
+           (sut/get-param {"age" [:op/gt "35"]} {:name :age})))))
 
 (deftest calc-hash-test
   (testing "Can calc digest from string"
@@ -173,25 +171,25 @@
             {:field "name", :root false, :alias :resource_name}
             {:field "given", :root false, :alias :resource_name_given}
             {:field "given", :coll true, :root false, :alias :resource_name_given_elem}]
-           (sut/prepare-path [{:field "resource"}
-                              {:field "name"}
-                              {:field "given", :coll true}])))
+           (sut/expand-path [{:field "resource"}
+                             {:field "name"}
+                             {:field "given", :coll true}])))
     (is (= [{:field "resource", :alias :resource, :root true}
             {:field "name", :alias :resource_name, :root false}
             {:field "given", :alias :first_name, :root false}
             {:field "given", :coll true, :alias :first_name_elem, :root false}]
-           (sut/prepare-path [{:field "resource"}
-                              {:field "name"}
-                              {:field "given", :coll true, :alias :first_name}])))
+           (sut/expand-path [{:field "resource"}
+                             {:field "name"}
+                             {:field "given", :coll true, :alias :first_name}])))
     (is (= [{:field "resource", :alias :resource, :root true}
             {:field "org", :alias :resource_org, :root false}
             {:field "org", :link "/Organization/id", :alias :resource_org_entity, :root false}
             {:field "resource", :alias :resource_org_entity.resource, :root true}
             {:field "name", :alias :resource_org_entity_resource_name, :root false}]
-           (sut/prepare-path [{:field "resource"}
-                              {:field "org", :link "/Organization/id"}
-                              {:field "resource"}
-                              {:field "name"}])))))
+           (sut/expand-path [{:field "resource"}
+                             {:field "org", :link "/Organization/id"}
+                             {:field "resource"}
+                             {:field "name"}])))))
 
 (deftest get-queryp-renames
   (testing "Can get params renames from queryp name to path alias"

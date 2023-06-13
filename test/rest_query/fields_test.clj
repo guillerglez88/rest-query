@@ -60,7 +60,7 @@
                (sut/link-entity :p_content_org {:field "org", :link "/Organization/id", :alias :p_content_org_entity})
                (hsql/format))))))
 
-(deftest extract-path-test
+(deftest expand-path-test
   (testing "Can access deep jsonb property"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
@@ -68,7 +68,7 @@
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(p_content_contacts) AS p_content_contacts_elem ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(p_content_contacts_elem, 'value') AS contact_value ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-path (util/prepare-path [{:field "p.content"} {:field "contacts", :coll true} {:field "value", :alias :contact_value}]))
+               (sut/extract-path (util/expand-path [{:field "p.content"} {:field "contacts", :coll true} {:field "value", :alias :contact_value}]))
                (hsql/format)))))
   (testing "Can access deep jsonb property with shared path elem"
     (is (= [(str "SELECT p.* "
@@ -78,8 +78,8 @@
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(p_content_name, 'family') AS lname ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-path (util/prepare-path [{:field "p.content"} {:field "name"} {:field "given", :coll true, :alias :fname}]))
-               (sut/extract-path (util/prepare-path [{:field "p.content"} {:field "name"} {:field "family", :alias :lname}]))
+               (sut/extract-path (util/expand-path [{:field "p.content"} {:field "name"} {:field "given", :coll true, :alias :fname}]))
+               (sut/extract-path (util/expand-path [{:field "p.content"} {:field "name"} {:field "family", :alias :lname}]))
                (hsql/format)))))
   (testing "Repeated props are not dupplicated"
     (is (= [(str "SELECT p.* "
@@ -89,7 +89,7 @@
                  "INNER JOIN JSONB_ARRAY_ELEMENTS(fname) AS fname_elem ON TRUE "
                  "INNER JOIN JSONB_EXTRACT_PATH(content_name, 'family') AS lname ON TRUE")]
            (-> (sut/all-by-type :Person :p)
-               (sut/extract-path (util/prepare-path [{:field "content"} {:field "name"} {:field "given", :coll true, :alias :fname}]))
-               (sut/extract-path (util/prepare-path [{:field "content"} {:field "name"} {:field "family", :alias :lname}]))
-               (sut/extract-path (util/prepare-path [{:field "content"} {:field "name"} {:field "family", :alias :lname}]))
+               (sut/extract-path (util/expand-path [{:field "content"} {:field "name"} {:field "given", :coll true, :alias :fname}]))
+               (sut/extract-path (util/expand-path [{:field "content"} {:field "name"} {:field "family", :alias :lname}]))
+               (sut/extract-path (util/expand-path [{:field "content"} {:field "name"} {:field "family", :alias :lname}]))
                (hsql/format))))))

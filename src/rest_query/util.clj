@@ -49,19 +49,14 @@
                 (vector name val))))
        (into {})))
 
-(defn get-param
-  ([params queryp]
-   (get-param params queryp nil))
-  ([params queryp parser]
-   (let [key (:name queryp)
-         default (queryp->values queryp)
-         parse (or parser identity)
-         [op & val] (-> params (get (name key)) (or default))]
-     (->> (identity val)
-          (map str)
-          (map parse)
-          (concat [op])
-          (vec)))))
+(defn get-param [params queryp]
+  (let [key (:name queryp)
+        default (queryp->values queryp)
+        [op & val] (-> params (get (name key)) (or default))]
+    (->> (identity val)
+         (map str)
+         (concat [op])
+         (vec))))
 
 (defn calc-hash [payload]
   (let [sha256 (MessageDigest/getInstance "SHA-256")]
@@ -104,7 +99,7 @@
       coll? (vector (dissoc self :coll) self)
       :else (vector self))))
 
-(defn prepare-path [path]
+(defn expand-path [path]
   (->> (seq path)
        (reduce #(concat %1 (expand-elem %2 (last %1))) [])
        (reduce #(conj %1 (assign-alias %2 (last %1))) [])

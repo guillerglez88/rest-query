@@ -16,7 +16,7 @@
                  "AND (CAST(desc AS TEXT) LIKE ?)")
             "%john%" "%lorem%" "%ipsum%"]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path (util/prepare-path [{:field "content"} {:field "name", :alias :name}]))
+               (fields/extract-path (util/expand-path [{:field "content"} {:field "name", :alias :name}]))
                (sut/contains-text :name ["john"])
                (sut/contains-text :desc ["lorem" "ipsum"])
                (hsql/format))))))
@@ -31,8 +31,8 @@
                  "AND (CAST(gender AS TEXT) IN (?, ?))")
             "\"active\"" "\"M\"" "\"F\""]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "status", :alias :status}]))
-               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "gender", :alias :gender}]))
+               (fields/extract-path (util/expand-path [{:field "content", :alias :content} {:field "status", :alias :status}]))
+               (fields/extract-path (util/expand-path [{:field "content", :alias :content} {:field "gender", :alias :gender}]))
                (sut/match-exact :status ["active"])
                (sut/match-exact :gender ["M" "F"])
                (hsql/format))))))
@@ -43,20 +43,20 @@
                  "FROM Person AS p "
                  "INNER JOIN JSONB_EXTRACT_PATH(content, 'age') AS age ON TRUE "
                  "WHERE CAST(age AS DECIMAL) = ?")
-            35]
+            35M]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "age", :alias :age}]))
-               (sut/number :age [35] :op/eq)
+               (fields/extract-path (util/expand-path [{:field "content", :alias :content} {:field "age", :alias :age}]))
+               (sut/number :age ["35"] :op/eq)
                (hsql/format)))))
   (testing "Can filter by number <= n"
     (is (= [(str "SELECT p.* "
                  "FROM Person AS p "
                  "INNER JOIN JSONB_EXTRACT_PATH(content, 'age') AS age ON TRUE "
                  "WHERE CAST(age AS DECIMAL) <= ?")
-            2]
+            2M]
            (-> (fields/all-by-type :Person :p)
-               (fields/extract-path (util/prepare-path [{:field "content", :alias :content} {:field "age", :alias :age}]))
-               (sut/number :age [2] :op/le)
+               (fields/extract-path (util/expand-path [{:field "content", :alias :content} {:field "age", :alias :age}]))
+               (sut/number :age ["2"] :op/le)
                (hsql/format))))))
 
 (deftest page-size-test
@@ -66,7 +66,7 @@
                  "LIMIT ?")
             128]
            (-> (fields/all-by-type :Resource :r)
-               (sut/page-size 128)
+               (sut/page-size "128")
                (hsql/format))))))
 
 (deftest page-start-test
@@ -76,7 +76,7 @@
                  "OFFSET ?")
             10]
            (-> (fields/all-by-type :Resource :r)
-               (sut/page-start 10)
+               (sut/page-start "10")
                (hsql/format))))))
 
 (deftest page-sort-test
@@ -107,7 +107,7 @@
                  "LIMIT ? OFFSET ?")
             128, 10]
            (-> (fields/all-by-type :Resource :r)
-               (sut/page 10 128)
+               (sut/page "10" "128")
                (hsql/format))))))
 
 (deftest total-test
