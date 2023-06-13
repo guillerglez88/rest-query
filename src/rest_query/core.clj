@@ -35,14 +35,13 @@
 
 (defn make-sql-map [from params queryps]
   (let [alias (util/make-alias from)
-        sql-map (fields/all-by-type from alias)
-        queryps-exp (map util/expand-queryp queryps)
-        renames (->> queryps-exp (map #(vector (:name %) (:alias %))) (into {}))
-        params-exp (util/process-params params)]
-    (->> (identity queryps-exp)
-         (filter #(or (contains? % :default)
-                      (contains? params-exp (:name %))))
-         (reduce (fn [acc curr] (refine acc curr params-exp renames)) sql-map))))
+        xparams (-> queryps meta :expanded? (if queryps (util/expand-params params)))
+        xqueryps (-> params meta :expanded? (if params (map util/expand-queryp queryps)))
+        renames (->> xqueryps (map #(vector (:name %) (:alias %))) (into {}))
+        sql-map (fields/all-by-type from alias)]
+    (->> (identity xqueryps)
+         (filter #(or (contains? % :default) (contains? xparams (:name %))))
+         (reduce (fn [acc curr] (refine acc curr xparams renames)) sql-map))))
 
 (defn make-query [from params queryps]
   (let [query (make-sql-map from params queryps)
@@ -56,7 +55,5 @@
               :total ftotal)))
 
 (defn url->query [url queryps]
-  (let [url-map (util/url->map url)
-        from (:from url-map)
-        params (:params url-map)]
+  (let [{from :from, params :params} (util/url->map url)]
     (make-query from params queryps)))

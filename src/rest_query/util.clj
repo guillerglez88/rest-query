@@ -41,13 +41,14 @@
        (concat [op])
        (vec)))
 
-(defn process-params [params]
+(defn expand-params [params]
   (->> (seq params)
        (map (fn [[k v]]
               (let [[name op] (parse-param-key k)
                     val (normalize-param-val op v)]
                 (vector name val))))
-       (into {})))
+       (into {})
+       (#(with-meta % {:expanded? true}))))
 
 (defn get-param [params queryp]
   (let [key (:name queryp)
@@ -113,3 +114,8 @@
         (assoc :name str-name
                :path expanded-path
                :alias alias))))
+
+(defn expand-queryps [queryps]
+  (->> (map expand-queryp queryps)
+       (vec)
+       (#(with-meta % {:expanded? true}))))
