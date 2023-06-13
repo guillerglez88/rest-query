@@ -64,17 +64,6 @@
     (is (= [:op/_nil "read,write"]
            (sut/normalize-param-val :op/_nil ["read,write"])))))
 
-(deftest expand-params-test
-  (testing "Can process params map to extract operations"
-    (is (= {"age" [:op/gt "21"]
-            "name" [:op/_nil "john"]
-            "gender" [:op/_nil "F" "M"]
-            "version" [:op/_nil "5"]}
-           (sut/expand-params {"age:gt" "21"
-                               "name" "john"
-                               "gender" ["F" "M"]
-                               "version" 5})))))
-
 (deftest get-param-test
   (testing "Can extract param value and operation"
     (is (= [:op/_nil "35"]
@@ -165,7 +154,7 @@
     (is (= [{:field "content", :root true}]
            (sut/expand-elem {:field "content"} {:field "org", :link "/Organization/id"})))))
 
-(deftest prepare-path-test
+(deftest expand-path-test
   (testing "Can pre-process path"
     (is (= [{:field "resource", :root true, :alias :resource}
             {:field "name", :root false, :alias :resource_name}
@@ -190,17 +179,3 @@
                              {:field "org", :link "/Organization/id"}
                              {:field "resource"}
                              {:field "name"}])))))
-
-(deftest expand-queryps-test
-  (testing "Can expand queryps to include ready to use data"
-    (is (= [{:code :filters/text
-             :name "lname"
-             :path [{ :field "resource", :root true, :alias :resource}
-                    { :field "name", :root false, :alias :resource_name}
-                    { :field "family", :alias :lname, :root false}]
-             :alias :lname}]
-           (sut/expand-queryps [{:code :filters/text
-                                 :name "lname"
-                                 :path [{:field "resource"}
-                                        {:field "name"}
-                                        {:field "family", :alias "lname"}]}])))))

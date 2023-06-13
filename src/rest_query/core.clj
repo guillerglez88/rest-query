@@ -33,10 +33,24 @@
     (-> (fields/extract-path sql-map path)
         (filter alias values op renames))))
 
+(defn expand-params [params]
+  (->> (seq params)
+       (map (fn [[k v]]
+              (let [[name op] (util/parse-param-key k)
+                    val (util/normalize-param-val op v)]
+                (vector name val))))
+       (into {})
+       (#(with-meta % {:expanded? true}))))
+
+(defn expand-queryps [queryps]
+  (->> (map util/expand-queryp queryps)
+       (vec)
+       (#(with-meta % {:expanded? true}))))
+
 (defn make-sql-map [from params queryps]
   (let [alias (util/make-alias from)
-        xparams (-> queryps meta :expanded? (if queryps (util/expand-params params)))
-        xqueryps (-> params meta :expanded? (if params (map util/expand-queryp queryps)))
+        xparams (-> queryps meta :expanded? (if queryps (expand-params params)))
+        xqueryps (-> params meta :expanded? (if params (expand-queryps queryps)))
         renames (->> xqueryps (map #(vector (:name %) (:alias %))) (into {}))
         sql-map (fields/all-by-type from alias)]
     (->> (identity xqueryps)

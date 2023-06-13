@@ -166,3 +166,72 @@
               "%john%" "%doe%" "\"M\"" 128 0]
              (-> (sut/make-sql-map :Person (select-keys params ["fname" "lname" "gender"]) queryps)
                  (hsql/format)))))))
+
+(deftest expand-params-test
+  (testing "Can process params map to extract operations"
+    (is (= {"age" [:op/gt "21"]
+            "name" [:op/_nil "john"]
+            "gender" [:op/_nil "F" "M"]
+            "version" [:op/_nil "5"]}
+           (sut/expand-params {"age:gt" "21"
+                               "name" "john"
+                               "gender" ["F" "M"]
+                               "version" 5})))))
+
+(deftest expand-queryps-test
+  (testing "Can expand queryps to make it ready for processing"
+    (is (= [{:code :filters/text,
+             :name "fname",
+             :path [{:field "resource", :root true, :alias :resource}
+                    {:field "name", :root false, :alias :resource_name}
+                    {:field "given", :alias :fname, :root false}
+                    {:field "given", :coll true, :alias :fname_elem, :root false}],
+             :alias :fname_elem}
+            {:code :filters/text,
+             :name "lname",
+             :path [{:field "resource", :root true, :alias :resource}
+                    {:field "name", :root false, :alias :resource_name}
+                    {:field "family", :alias :lname, :root false}],
+             :alias :lname}
+            {:code :filters/keyword,
+             :name "gender",
+             :path [{:field "resource", :root true, :alias :resource}
+                    {:field "gender", :alias :gender, :root false}],
+             :alias :gender}
+            {:code :filters/number,
+             :name "age",
+             :path [{:field "resource", :root true, :alias :resource}
+                    {:field "age", :alias :age, :root false}],
+             :alias :age}
+            {:code :filters/text,
+             :name "org-name",
+             :path [{:field "resource", :root true, :alias :resource}
+                    {:field "organization", :alias :org, :root false}
+                    {:field "organization",
+                     :link "/Organization/id",
+                     :alias :org_entity,
+                     :root false}
+                    {:field "resource", :root true, :alias :org_entity.resource}
+                    {:field "name", :alias :org_name, :root false}],
+             :alias :org_name}
+            {:code :filters/date,
+             :name "_created",
+             :path [{:field "created", :root true, :alias :created}],
+             :default [],
+             :alias :created}
+            {:code :page/sort,
+             :name "sort",
+             :default "_created",
+             :path [],
+             :alias nil}
+            {:code :page/offset,
+             :name "page-start",
+             :default 0,
+             :path [],
+             :alias nil}
+            {:code :page/limit,
+             :name "page-size",
+             :default 128,
+             :path [],
+             :alias nil}]
+           (sut/expand-queryps queryps)))))
